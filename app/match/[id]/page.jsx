@@ -13,7 +13,7 @@ export default function MatchDetailsPage({ params }) {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Match Header */}
         <Card className="p-6 mb-6 animate-slide-up">
           <div className="flex items-center justify-between mb-4">

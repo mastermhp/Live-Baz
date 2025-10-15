@@ -152,7 +152,7 @@ export default function TeamsPage() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-float" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-green-500/20 rounded-full blur-3xl animate-float-delayed" />
 
-        <div className="container mx-auto px-4 py-16 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 py-16 relative z-10">
           <div className="flex items-center gap-4 mb-6 animate-slide-up">
             <div className="relative">
               <Shield className="h-12 w-12 text-white" />
@@ -180,7 +180,7 @@ export default function TeamsPage() {
         </div>
       </div>
 
-      <main className="container mx-auto px-4 py-12">
+      <main className="max-w-7xl mx-auto px-4 py-12">
         {/* League Filters */}
         <div className="flex flex-wrap gap-3 mb-8 animate-slide-up">
           {leagues.map((league) => (

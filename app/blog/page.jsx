@@ -12,7 +12,7 @@ export default function BlogPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Page Header */}
         <div className="mb-8 animate-slide-up">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Analysis & News</h1>
