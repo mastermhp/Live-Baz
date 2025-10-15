@@ -73,12 +73,8 @@ export default function HomePage() {
             {/* Live Matches Section */}
             <section className="mb-16">
               <div className="flex items-center justify-between mb-8 animate-slide-up">
-                <div className="flex items-center gap-4">
+                {/* <div className="flex items-center gap-4">
                   <div className="relative">
-                    {/* <Flame className="h-8 w-8 text-green-500 animate-pulse" /> */}
-                    <Badge className="bg-green-500 rounded-full text-white animate-pulse-subtle">
-                      {liveMatches.length} LIVE
-                    </Badge>
                     <div className="absolute inset-0 h-8 w-8 bg-green-500 rounded-full blur-xl opacity-50 animate-pulse" />
                   </div>
                   <div>
@@ -89,6 +85,21 @@ export default function HomePage() {
                       Real-time updates and predictions
                     </p>
                   </div>
+                </div> */}
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <Flame className="h-7 w-7 text-green-500 animate-pulse-subtle" />
+                    <div className="absolute inset-0 h-7 w-7 bg-green-500 rounded-full blur-lg opacity-50 animate-pulse-subtle" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      Live Matches
+                    </h2>
+                    <p className="text-sm text-gray-600">Real-time updates</p>
+                  </div>
+                  <Badge className="bg-green-500 rounded-full text-white animate-pulse-subtle">
+                    {liveMatches.length} LIVE
+                  </Badge>
                 </div>
                 <Link href="/live">
                   <Button className="gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">

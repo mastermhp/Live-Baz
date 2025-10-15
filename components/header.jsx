@@ -113,7 +113,7 @@ export default function Header() {
                 onClick={() => setSearchOpen(!searchOpen)}
                 className="relative group hover:bg-blue-50 transition-all duration-300 h-10 w-10 rounded-xl"
               >
-                <Search className="h-5 w-5 text-gray-600 group-hover:text-blue-600 group-hover:scale-110 transition-all duration-300" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-600 group-hover:text-blue-600 group-hover:scale-110 transition-all duration-300" />
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500 to-green-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
               </Button>
 
@@ -134,24 +134,22 @@ export default function Header() {
               )}
             </div>
 
-            <Button
-              className={`hidden md:inline-flex relative overflow-hidden group h-10 px-6 rounded-xl font-semibold text-sm shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 ${
-                isLoaded ? "animate-scale-in" : "opacity-0"
-              }`}
-              style={{
-                background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-                boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)",
-              }}
-            >
-              {/* Glossy overlay effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-
-              {/* Animated background glow */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
-
-              <User className="h-4 w-4 mr-2 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
-              <span className="relative z-10">Sign In</span>
-            </Button>
+            <Link href="/signin">
+              <Button
+                className={`hidden md:inline-flex relative overflow-hidden group h-10 px-6 rounded-xl font-semibold text-sm shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 ${
+                  isLoaded ? "animate-scale-in" : "opacity-0"
+                }`}
+                style={{
+                  background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+                  boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)",
+                }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
+                <User className="h-4 w-4 mr-2 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                <span className="relative z-10">Sign In</span>
+              </Button>
+            </Link>
 
             {/* Mobile menu button */}
             <Button
@@ -210,15 +208,17 @@ export default function Header() {
               >
                 Analysis
               </Link>
-              <Button
-                className="mt-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg"
-                style={{
-                  boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)",
-                }}
-              >
-                <User className="h-4 w-4 mr-2" />
-                Sign In
-              </Button>
+              <Link href="/signin">
+                <Button
+                  className="mt-3 w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg"
+                  style={{
+                    boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)",
+                  }}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Sign In
+                </Button>
+              </Link>
             </nav>
           </div>
         )}
