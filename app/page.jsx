@@ -1,9 +1,13 @@
+"use client";
 import Header from "@/components/header";
-import HeroSection from "@/components/hero-section";
+import PredictionsSection from "@/components/predictions-section";
+import TopLeaguesSection from "@/components/top-leagues-section";
+import LiveScoresSection from "@/components/live-scores-section"
 import MatchCard from "@/components/match-card";
 import { demoMatches, demoArticles } from "@/lib/demo-data";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+
 import {
   ArrowRight,
   Flame,
@@ -15,6 +19,20 @@ import {
   Calendar,
 } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
+
+const leagues = [
+  { id: 1, name: "African Nations Championship", icon: "🏆" },
+  { id: 2, name: "Champions League", icon: "⭐" },
+  { id: 3, name: "UEFA Super Cup", icon: "🏅" },
+  { id: 4, name: "Europa League", icon: "🏆" },
+  { id: 5, name: "Europa Conference League", icon: "🏆" },
+  { id: 6, name: "English Premier League", icon: "🇬🇧" },
+  { id: 7, name: "LaLiga Spain", icon: "🇪🇸" },
+  { id: 8, name: "Serie A Italy", icon: "🇮🇹" },
+  { id: 9, name: "Bundesliga Germany", icon: "🇩🇪" },
+  { id: 10, name: "Ligue 1 France", icon: "🇫🇷" },
+];
 
 export default function HomePage() {
   const liveMatches = demoMatches.filter((m) => m.status === "live");
@@ -24,52 +42,151 @@ export default function HomePage() {
     <div className="min-h-screen bg-white">
       <Header />
       {/* <HeroSection /> */}
+      <PredictionsSection />
 
       <main className="max-w-7xl mx-auto px-4 py-8">
+        
+        <LiveScoresSection/>
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar - Top Leagues */}
           <aside className="lg:col-span-1">
             <Card className="p-6 sticky top-24 animate-fade-in">
-              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-blue-600" />
-                Top Leagues
-              </h2>
-              <nav className="space-y-2">
-                {[
-                  { name: "Premier League", country: "England", icon: "⚽" },
-                  { name: "La Liga", country: "Spain", icon: "⚽" },
-                  { name: "Serie A", country: "Italy", icon: "⚽" },
-                  { name: "Bundesliga", country: "Germany", icon: "⚽" },
-                  { name: "Ligue 1", country: "France", icon: "⚽" },
-                  { name: "Champions League", country: "Europe", icon: "🏆" },
-                  { name: "Europa League", country: "Europe", icon: "🏆" },
-                ].map((league, index) => (
-                  <Link
-                    key={league.name}
-                    href={`/leagues/${league.name
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")}`}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 transition-colors group animate-slide-in-left"
-                    style={{ animationDelay: `${index * 0.05}s` }}
-                  >
-                    <span className="text-xl">{league.icon}</span>
-                    <div className="flex-1">
-                      <div className="font-semibold text-sm text-gray-900 group-hover:text-blue-600 transition-colors">
-                        {league.name}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {league.country}
-                      </div>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </Link>
-                ))}
-              </nav>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
+                className="lg:col-span-1"
+              >
+                <div className="flex items-center gap-2 mb-6">
+                  <span className="text-accent-blue text-2xl">/</span>
+                  <h3 className="text-2xl font-bold text-foreground">
+                    Top Leagues
+                  </h3>
+                  <span className="text-accent-blue text-2xl">/</span>
+                </div>
+
+                <div className="space-y-2 border border-border rounded-lg p-4">
+                  {leagues.map((league, index) => (
+                    <motion.button
+                      key={league.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                      className="w-full text-left px-4 py-3 rounded-lg hover:bg-primary transition-all duration-300 ease-out text-sm text-foreground hover:text-accent"
+                    >
+                      <span className="mr-2">{league.icon}</span>
+                      {league.name}
+                    </motion.button>
+                  ))}
+                </div>
+
+                <button className="w-full mt-4 px-6 py-3 border-2 border-accent text-accent rounded-full font-semibold hover:bg-accent hover:text-primary transition-all duration-300 ease-out">
+                  All leagues
+                </button>
+              </motion.div>
             </Card>
           </aside>
 
+          
+
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-8">
+
+            <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="lg:col-span-3"
+          >
+            <div className="flex items-center gap-2 mb-6">
+              <span className="text-accent-blue text-2xl">/</span>
+              <h3 className="text-2xl font-bold text-foreground">Scores</h3>
+              <span className="text-accent-blue text-2xl">/</span>
+            </div>
+
+            <div className="space-y-3">
+              {[
+                {
+                  team1: "Luqueno",
+                  team2: "Sportivo Trinidense",
+                  score1: 0,
+                  score2: 0,
+                  minute: "71'",
+                  status: "LIVE",
+                },
+                {
+                  team1: "Santiago Morning",
+                  team2: "Cobreloá",
+                  score1: 2,
+                  score2: 0,
+                  minute: "45' +2",
+                  status: "LIVE",
+                },
+                {
+                  team1: "Audax Italiano",
+                  team2: "Union La Calera",
+                  score1: 1,
+                  score2: 3,
+                  minute: "45'",
+                  status: "LIVE",
+                },
+                {
+                  team1: "Academia Puerto Cabello",
+                  team2: "Deportivo La Guaira",
+                  score1: 1,
+                  score2: 0,
+                  minute: "29'",
+                  status: "LIVE",
+                },
+                {
+                  team1: "Real Tomayapo",
+                  team2: "Guabira",
+                  score1: 1,
+                  score2: 0,
+                  minute: "29'",
+                  status: "LIVE",
+                },
+              ].map((game, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="flex items-center justify-between p-4 border border-border rounded-lg hover:border-accent transition-all duration-300 ease-out"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block w-2 h-2 bg-accent rounded-full animate-pulse" />
+                    <span className="text-xs font-bold text-accent">
+                      {game.status}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {game.minute}
+                    </span>
+                  </div>
+
+                  <div className="flex-1 text-center px-4">
+                    <p className="text-sm text-accent font-semibold">
+                      {game.team1}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl font-bold text-foreground">
+                      {game.score1}
+                    </span>
+                    <span className="text-muted-foreground">:</span>
+                    <span className="text-xl font-bold text-foreground">
+                      {game.score2}
+                    </span>
+                  </div>
+
+                  <div className="flex-1 text-center px-4">
+                    <p className="text-sm text-foreground">{game.team2}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
             {/* Live Matches Section */}
             <section className="mb-16">
               <div className="flex items-center justify-between mb-8 animate-slide-up">
@@ -234,6 +351,7 @@ export default function HomePage() {
             </section>
           </div>
         </div>
+        <TopLeaguesSection />
       </main>
 
       <main className="max-w-7xl mx-auto px-4 py-12">
