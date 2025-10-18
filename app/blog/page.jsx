@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { demoArticles } from "@/lib/demo-data"
 import Link from "next/link"
 import { Calendar, Clock } from "lucide-react"
+import Footer from "@/components/footer"
 
 export default function BlogPage() {
   const categories = ["All", "Analysis", "Preview", "Features", "News"]
@@ -126,6 +127,7 @@ export default function BlogPage() {
           ))}
         </div>
       </main>
+      <Footer/>
     </div>
   )
 }

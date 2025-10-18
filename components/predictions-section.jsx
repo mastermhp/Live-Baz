@@ -206,6 +206,7 @@ export default function PredictionsSection() {
 
         {/* View All Button */}
         <div className="flex justify-center mt-16">
+          <Link href="/all-predictions">
           <motion.button
             whileHover={{
               scale: 1.08,
@@ -215,6 +216,7 @@ export default function PredictionsSection() {
           >
             All Predictions →
           </motion.button>
+          </Link>
         </div>
       </div>
     </section>

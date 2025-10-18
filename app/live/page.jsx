@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { demoMatches } from "@/lib/demo-data"
 import { Flame, Filter, Radio, TrendingUp, Clock } from "lucide-react"
+import Footer from "@/components/footer"
 
 export default function LivePage() {
   const [filter, setFilter] = useState("all")
@@ -188,6 +189,8 @@ export default function LivePage() {
                 ))}
             </div>
           </div>
+
+          
         </div>
 
         {/* No matches message if filtered */}
@@ -199,6 +202,7 @@ export default function LivePage() {
           </Card>
         )}
       </main>
+      <Footer/>
     </div>
   )
 }

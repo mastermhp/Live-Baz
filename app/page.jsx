@@ -1,7 +1,7 @@
 "use client";
 import Header from "@/components/header";
+import Footer from "@/components/footer";
 import PredictionsSection from "@/components/predictions-section";
-import TopLeaguesSection from "@/components/top-leagues-section";
 import LiveScoresSection from "@/components/live-scores-section"
 import MatchCard from "@/components/match-card";
 import { demoMatches, demoArticles } from "@/lib/demo-data";
@@ -46,7 +46,7 @@ export default function HomePage() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         
-        <LiveScoresSection/>
+        
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar - Top Leagues */}
           <aside className="lg:col-span-1">
@@ -92,151 +92,9 @@ export default function HomePage() {
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-8">
 
-            <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="lg:col-span-3"
-          >
-            <div className="flex items-center gap-2 mb-6">
-              <span className="text-accent-blue text-2xl">/</span>
-              <h3 className="text-2xl font-bold text-foreground">Scores</h3>
-              <span className="text-accent-blue text-2xl">/</span>
-            </div>
-
-            <div className="space-y-3">
-              {[
-                {
-                  team1: "Luqueno",
-                  team2: "Sportivo Trinidense",
-                  score1: 0,
-                  score2: 0,
-                  minute: "71'",
-                  status: "LIVE",
-                },
-                {
-                  team1: "Santiago Morning",
-                  team2: "Cobreloá",
-                  score1: 2,
-                  score2: 0,
-                  minute: "45' +2",
-                  status: "LIVE",
-                },
-                {
-                  team1: "Audax Italiano",
-                  team2: "Union La Calera",
-                  score1: 1,
-                  score2: 3,
-                  minute: "45'",
-                  status: "LIVE",
-                },
-                {
-                  team1: "Academia Puerto Cabello",
-                  team2: "Deportivo La Guaira",
-                  score1: 1,
-                  score2: 0,
-                  minute: "29'",
-                  status: "LIVE",
-                },
-                {
-                  team1: "Real Tomayapo",
-                  team2: "Guabira",
-                  score1: 1,
-                  score2: 0,
-                  minute: "29'",
-                  status: "LIVE",
-                },
-              ].map((game, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="flex items-center justify-between p-4 border border-border rounded-lg hover:border-accent transition-all duration-300 ease-out"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="inline-block w-2 h-2 bg-accent rounded-full animate-pulse" />
-                    <span className="text-xs font-bold text-accent">
-                      {game.status}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {game.minute}
-                    </span>
-                  </div>
-
-                  <div className="flex-1 text-center px-4">
-                    <p className="text-sm text-accent font-semibold">
-                      {game.team1}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl font-bold text-foreground">
-                      {game.score1}
-                    </span>
-                    <span className="text-muted-foreground">:</span>
-                    <span className="text-xl font-bold text-foreground">
-                      {game.score2}
-                    </span>
-                  </div>
-
-                  <div className="flex-1 text-center px-4">
-                    <p className="text-sm text-foreground">{game.team2}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+          <LiveScoresSection/>
             {/* Live Matches Section */}
-            <section className="mb-16">
-              <div className="flex items-center justify-between mb-8 animate-slide-up">
-                {/* <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <div className="absolute inset-0 h-8 w-8 bg-green-500 rounded-full blur-xl opacity-50 animate-pulse" />
-                  </div>
-                  <div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-                      Live Matches
-                    </h2>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Real-time updates and predictions
-                    </p>
-                  </div>
-                </div> */}
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <Flame className="h-7 w-7 text-green-500 animate-pulse-subtle" />
-                    <div className="absolute inset-0 h-7 w-7 bg-green-500 rounded-full blur-lg opacity-50 animate-pulse-subtle" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      Live Matches
-                    </h2>
-                    <p className="text-sm text-gray-600">Real-time updates</p>
-                  </div>
-                  <Badge className="bg-green-500 rounded-full text-white animate-pulse-subtle">
-                    {liveMatches.length} LIVE
-                  </Badge>
-                </div>
-                <Link href="/live">
-                  <Button className="gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
-                    View All Live
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {liveMatches.map((match, index) => (
-                  <div
-                    key={match.id}
-                    className="stagger-item animate-fade-in"
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <MatchCard match={match} />
-                  </div>
-                ))}
-              </div>
-            </section>
+            
 
             {/* Upcoming Matches Section */}
             <section className="mb-16">
@@ -351,7 +209,6 @@ export default function HomePage() {
             </section>
           </div>
         </div>
-        <TopLeaguesSection />
       </main>
 
       <main className="max-w-7xl mx-auto px-4 py-12">
@@ -411,136 +268,7 @@ export default function HomePage() {
         </section>
       </main>
 
-      <footer className="border-t-2 border-gray-100 bg-gradient-to-br from-gray-50 to-white mt-16">
-        <div className="max-w-5xl mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-            <div>
-              <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-removebg-preview%20%281%29-OFuZSfQKZS8jOPIWZsviyv6sNwxUjd.png"
-                alt="LIVEBAZ"
-                className="h-12 w-auto mb-4"
-              />
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Your ultimate destination for live scores, AI-powered
-                predictions, and expert sports analytics.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 mb-4">Quick Links</h4>
-              <ul className="space-y-3 text-sm text-gray-600">
-                <li>
-                  <Link
-                    href="/live"
-                    className="hover:text-blue-600 transition-colors flex items-center gap-2"
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                    Live Matches
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/leagues"
-                    className="hover:text-blue-600 transition-colors flex items-center gap-2"
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                    Leagues
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/teams"
-                    className="hover:text-blue-600 transition-colors flex items-center gap-2"
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                    Teams
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/blog"
-                    className="hover:text-blue-600 transition-colors flex items-center gap-2"
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                    Blog
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 mb-4">Company</h4>
-              <ul className="space-y-3 text-sm text-gray-600">
-                <li>
-                  <Link
-                    href="/about"
-                    className="hover:text-blue-600 transition-colors flex items-center gap-2"
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                    About Us
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/contact"
-                    className="hover:text-blue-600 transition-colors flex items-center gap-2"
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                    Contact
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/privacy"
-                    className="hover:text-blue-600 transition-colors flex items-center gap-2"
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/terms"
-                    className="hover:text-blue-600 transition-colors flex items-center gap-2"
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                    Terms of Service
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 mb-4">Follow Us</h4>
-              <ul className="space-y-3 text-sm text-gray-600">
-                <li>
-                  <a href="#" className="hover:text-blue-600 transition-colors">
-                    Twitter
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-blue-600 transition-colors">
-                    Facebook
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-blue-600 transition-colors">
-                    Instagram
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-blue-600 transition-colors">
-                    YouTube
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-10 pt-8 border-t border-gray-200 text-center text-sm text-gray-600">
-            <p>
-              © 2025 LIVEBAZ. All rights reserved. Made with ❤️ for sports fans
-              worldwide.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer/>
     </div>
   );
 }

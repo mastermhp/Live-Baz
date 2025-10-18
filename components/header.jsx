@@ -23,20 +23,25 @@ export default function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full transition-all duration-500 ${
-        scrolled
-          ? "bg-white/80 backdrop-blur-xl shadow-2xl border-b border-blue-100/50"
-          : "bg-white/70 backdrop-blur-lg border-b border-gray-100/50"
-      }`}
+      className={`sticky top-0 z-50 w-full transition-all duration-500 overflow-hidden`}
       style={{
         background: scrolled
-          ? "linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85))"
-          : "linear-gradient(to bottom, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.8))",
-        backdropFilter: "blur(20px) saturate(180%)",
-        WebkitBackdropFilter: "blur(20px) saturate(180%)",
+          ? "linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(20, 30, 50, 0.7) 100%)"
+          : "linear-gradient(135deg, rgba(15, 23, 42, 0.65) 0%, rgba(20, 30, 50, 0.65) 100%)",
+        backdropFilter: "blur(40px) saturate(180%) brightness(1.1)",
+        WebkitBackdropFilter: "blur(40px) saturate(180%) brightness(1.1)",
+        borderBottom: "1px solid rgba(59, 130, 246, 0.3)",
+        boxShadow: scrolled
+          ? "0 8px 40px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.3)"
+          : "0 4px 25px rgba(59, 130, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.2)",
       }}
     >
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-transparent opacity-50" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 relative z-10">
         <div className="flex h-16 items-center justify-between gap-6">
           {/* Logo with enhanced animation */}
           <Link
@@ -49,10 +54,10 @@ export default function Header() {
               <img
                 src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-removebg-preview%20%281%29-OFuZSfQKZS8jOPIWZsviyv6sNwxUjd.png"
                 alt="LIVEBAZ"
-                className="h-14 w-auto transition-all duration-500 group-hover:scale-110 group-hover:brightness-110"
+                className="h-14 w-auto transition-all duration-500 group-hover:scale-110 group-hover:brightness-125 filter drop-shadow-lg"
                 loading="eager"
               />
-              <div className="absolute -inset-3 bg-gradient-to-r from-blue-500 to-green-500 rounded-full opacity-0 group-hover:opacity-30 blur-2xl transition-all duration-500" />
+              <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/40 to-cyan-500/40 rounded-full opacity-0 group-hover:opacity-100 blur-3xl transition-all duration-500" />
             </div>
           </Link>
 
@@ -64,39 +69,39 @@ export default function Header() {
           >
             <Link
               href="/"
-              className="relative px-4 py-2 text-sm font-semibold text-gray-700 hover:text-blue-600 transition-all duration-300 group"
+              className="relative px-4 py-2 text-sm font-semibold text-gray-100 hover:text-blue-200 transition-all duration-300 group"
             >
               Home
-              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-green-500 group-hover:w-3/4 transition-all duration-300" />
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-3/4 transition-all duration-300" />
             </Link>
             <Link
               href="/live"
-              className="relative px-4 py-2 text-sm font-semibold text-gray-700 hover:text-blue-600 transition-all duration-300 flex items-center gap-2 group"
+              className="relative px-4 py-2 text-sm font-semibold text-gray-100 hover:text-blue-200 transition-all duration-300 flex items-center gap-2 group"
             >
-              <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse-subtle" />
+              <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse-subtle shadow-lg shadow-green-400/50" />
               Live
-              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-green-500 group-hover:w-3/4 transition-all duration-300" />
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-3/4 transition-all duration-300" />
             </Link>
             <Link
               href="/leagues"
-              className="relative px-4 py-2 text-sm font-semibold text-gray-700 hover:text-blue-600 transition-all duration-300 group"
+              className="relative px-4 py-2 text-sm font-semibold text-gray-100 hover:text-blue-200 transition-all duration-300 group"
             >
               Leagues
-              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-green-500 group-hover:w-3/4 transition-all duration-300" />
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-3/4 transition-all duration-300" />
             </Link>
             <Link
               href="/teams"
-              className="relative px-4 py-2 text-sm font-semibold text-gray-700 hover:text-blue-600 transition-all duration-300 group"
+              className="relative px-4 py-2 text-sm font-semibold text-gray-100 hover:text-blue-200 transition-all duration-300 group"
             >
               Teams
-              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-green-500 group-hover:w-3/4 transition-all duration-300" />
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-3/4 transition-all duration-300" />
             </Link>
             <Link
               href="/blog"
-              className="relative px-4 py-2 text-sm font-semibold text-gray-700 hover:text-blue-600 transition-all duration-300 group"
+              className="relative px-4 py-2 text-sm font-semibold text-gray-100 hover:text-blue-200 transition-all duration-300 group"
             >
               Analysis
-              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-600 to-green-500 group-hover:w-3/4 transition-all duration-300" />
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-3/4 transition-all duration-300" />
             </Link>
           </nav>
 
@@ -111,21 +116,28 @@ export default function Header() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="relative group hover:bg-blue-50 transition-all duration-300 h-10 w-10 rounded-xl"
+                className="relative group hover:bg-white/10 transition-all duration-300 h-10 w-10 rounded-xl text-gray-300 hover:text-blue-200"
               >
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-600 group-hover:text-blue-600 group-hover:scale-110 transition-all duration-300" />
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500 to-green-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 group-hover:scale-110 transition-all duration-300" />
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/30 to-cyan-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-lg" />
               </Button>
 
               {searchOpen && (
                 <div className="absolute right-0 top-full mt-2 w-80 animate-slide-down">
-                  <div className="bg-white rounded-xl shadow-2xl border-2 border-blue-100 p-3">
+                  <div
+                    className="rounded-xl shadow-2xl border p-3 backdrop-blur-2xl"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(20, 30, 50, 0.8) 100%)",
+                      borderColor: "rgba(59, 130, 246, 0.4)",
+                      boxShadow: "0 8px 32px rgba(59, 130, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+                    }}
+                  >
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                       <input
                         type="search"
                         placeholder="Search teams, leagues..."
-                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300 text-sm"
+                        className="w-full pl-10 pr-4 py-2 bg-white/5 border border-blue-500/30 rounded-lg focus:border-blue-400 focus:bg-white/10 focus:outline-none transition-all duration-300 text-sm text-gray-100 placeholder-gray-500 backdrop-blur-sm"
                         autoFocus
                       />
                     </div>
@@ -136,16 +148,18 @@ export default function Header() {
 
             <Link href="/signin">
               <Button
-                className={`hidden md:inline-flex relative overflow-hidden group h-10 px-6 rounded-xl font-semibold text-sm shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 ${
+                className={`hidden md:inline-flex relative overflow-hidden group h-10 px-6 rounded-xl font-semibold text-sm shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 text-white ${
                   isLoaded ? "animate-scale-in" : "opacity-0"
                 }`}
                 style={{
-                  background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-                  boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)",
+                  background: "linear-gradient(135deg, rgba(59, 130, 246, 0.85) 0%, rgba(34, 197, 233, 0.85) 100%)",
+                  boxShadow:
+                    "0 4px 20px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.2)",
+                  backdropFilter: "blur(10px)",
                 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-400 opacity-0 group-hover:opacity-20 transition-opacity duration-500 blur-xl" />
                 <User className="h-4 w-4 mr-2 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
                 <span className="relative z-10">Sign In</span>
               </Button>
@@ -155,7 +169,7 @@ export default function Header() {
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden hover:bg-blue-50 transition-colors h-10 w-10 rounded-xl"
+              className="lg:hidden hover:bg-white/10 transition-colors h-10 w-10 rounded-xl text-gray-300 hover:text-blue-200"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -165,54 +179,61 @@ export default function Header() {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-gray-100 animate-slide-down">
+          <div
+            className="lg:hidden py-4 border-t animate-slide-down backdrop-blur-xl"
+            style={{
+              background: "linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(20, 30, 50, 0.7) 100%)",
+              borderColor: "rgba(59, 130, 246, 0.3)",
+            }}
+          >
             <div className="mb-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="search"
                   placeholder="Search..."
-                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-all text-sm"
+                  className="w-full pl-10 pr-4 py-2 bg-white/5 border border-blue-500/30 rounded-lg focus:border-blue-400 focus:outline-none transition-all text-sm text-gray-100 placeholder-gray-500 backdrop-blur-sm"
                 />
               </div>
             </div>
             <nav className="flex flex-col gap-2">
               <Link
                 href="/"
-                className="text-sm font-semibold hover:text-blue-600 transition-colors py-2 px-3 rounded-lg hover:bg-blue-50"
+                className="text-sm font-semibold text-gray-100 hover:text-blue-200 transition-colors py-2 px-3 rounded-lg hover:bg-blue-500/10"
               >
                 Home
               </Link>
               <Link
                 href="/live"
-                className="text-sm font-semibold hover:text-blue-600 transition-colors py-2 px-3 rounded-lg hover:bg-blue-50 flex items-center gap-2"
+                className="text-sm font-semibold text-gray-100 hover:text-blue-200 transition-colors py-2 px-3 rounded-lg hover:bg-blue-500/10 flex items-center gap-2"
               >
-                <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse-subtle" />
+                <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse-subtle" />
                 Live Matches
               </Link>
               <Link
                 href="/leagues"
-                className="text-sm font-semibold hover:text-blue-600 transition-colors py-2 px-3 rounded-lg hover:bg-blue-50"
+                className="text-sm font-semibold text-gray-100 hover:text-blue-200 transition-colors py-2 px-3 rounded-lg hover:bg-blue-500/10"
               >
                 Leagues
               </Link>
               <Link
                 href="/teams"
-                className="text-sm font-semibold hover:text-blue-600 transition-colors py-2 px-3 rounded-lg hover:bg-blue-50"
+                className="text-sm font-semibold text-gray-100 hover:text-blue-200 transition-colors py-2 px-3 rounded-lg hover:bg-blue-500/10"
               >
                 Teams
               </Link>
               <Link
                 href="/blog"
-                className="text-sm font-semibold hover:text-blue-600 transition-colors py-2 px-3 rounded-lg hover:bg-blue-50"
+                className="text-sm font-semibold text-gray-100 hover:text-blue-200 transition-colors py-2 px-3 rounded-lg hover:bg-blue-500/10"
               >
                 Analysis
               </Link>
               <Link href="/signin">
                 <Button
-                  className="mt-3 w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg"
+                  className="mt-3 w-full text-white shadow-lg"
                   style={{
-                    boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)",
+                    background: "linear-gradient(135deg, rgba(59, 130, 246, 0.85) 0%, rgba(34, 197, 233, 0.85) 100%)",
+                    boxShadow: "0 4px 20px rgba(59, 130, 246, 0.4)",
                   }}
                 >
                   <User className="h-4 w-4 mr-2" />
