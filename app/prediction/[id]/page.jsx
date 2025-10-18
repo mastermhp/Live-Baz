@@ -346,6 +346,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { TrendingUp, Users, Target, Shield, Zap, ArrowRight, Clock } from "lucide-react"
 import Header from "@/components/header"
+import Footer from "@/components/footer"
 
 export default function PredictionDetailsPage() {
   const { id } = useParams()
