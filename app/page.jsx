@@ -41,8 +41,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      {/* <HeroSection /> */}
-      <PredictionsSection />
+      
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         
@@ -210,6 +209,9 @@ export default function HomePage() {
           </div>
         </div>
       </main>
+
+      {/* <HeroSection /> */}
+      <PredictionsSection />
 
       <main className="max-w-7xl mx-auto px-4 py-12">
         <section className="py-16 animate-fade-in">
