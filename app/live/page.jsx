@@ -4,25 +4,46 @@ import { useState, useEffect } from "react"
 import Header from "@/components/header"
 import MatchCard from "@/components/match-card"
 import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { demoMatches } from "@/lib/demo-data"
 import { Flame, Filter, Radio, TrendingUp, Clock } from "lucide-react"
 import Footer from "@/components/footer"
+import { getLiveMatches, getUpcomingMatches } from "@/lib/api-football"
+import { transformMatches } from "@/lib/transform-api-data"
 
 export default function LivePage() {
   const [filter, setFilter] = useState("all")
-  const liveMatches = demoMatches.filter((m) => m.status === "live")
-
-  // Simulate live updates
-  const [liveCount, setLiveCount] = useState(liveMatches.length)
+  const [liveMatches, setLiveMatches] = useState([])
+  const [upcomingMatches, setUpcomingMatches] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [liveCount, setLiveCount] = useState(0)
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLiveCount((prev) => prev + Math.floor(Math.random() * 3) - 1)
-    }, 5000)
+    const fetchMatches = async () => {
+      try {
+        setLoading(true)
+        const [liveData, upcomingData] = await Promise.all([getLiveMatches(), getUpcomingMatches(1)])
+
+        const transformedLive = transformMatches(liveData)
+        const transformedUpcoming = transformMatches(upcomingData)
+
+        setLiveMatches(transformedLive)
+        setUpcomingMatches(transformedUpcoming)
+        setLiveCount(transformedLive.length)
+      } catch (error) {
+        console.error("Error fetching matches:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchMatches()
+
+    // Refresh live data every 30 seconds
+    const interval = setInterval(fetchMatches, 30000)
     return () => clearInterval(interval)
   }, [])
+
+  const displayMatches = [...liveMatches, ...upcomingMatches]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50/30 to-green-50/30">
@@ -53,7 +74,7 @@ export default function LivePage() {
                 <Flame className="h-6 w-6 text-green-300" />
                 <span className="text-sm text-white/80">Live Now</span>
               </div>
-              <div className="text-4xl font-bold">{Math.max(0, liveCount)}</div>
+              <div className="text-4xl font-bold">{liveCount}</div>
             </Card>
             <Card
               className="bg-white/10 backdrop-blur-lg border-white/20 p-6 hover:bg-white/20 transition-all duration-300 animate-fade-in"
@@ -73,7 +94,7 @@ export default function LivePage() {
                 <Clock className="h-6 w-6 text-yellow-300" />
                 <span className="text-sm text-white/80">Starting Soon</span>
               </div>
-              <div className="text-4xl font-bold">8</div>
+              <div className="text-4xl font-bold">{upcomingMatches.length}</div>
             </Card>
             <Card
               className="bg-white/10 backdrop-blur-lg border-white/20 p-6 hover:bg-white/20 transition-all duration-300 animate-fade-in"
@@ -115,94 +136,29 @@ export default function LivePage() {
 
         {/* Live Matches Grid */}
         <div className="space-y-8">
-          {/* Premier League Section */}
-          <div className="animate-fade-in">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">PL</span>
+          {loading ? (
+            <Card className="p-12 text-center">
+              <div className="animate-spin inline-block">
+                <Radio className="h-16 w-16 text-gray-400" />
               </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Premier League</h2>
-                <p className="text-sm text-gray-600">England • Matchday 23</p>
+              <p className="text-gray-600 mt-4">Loading live matches...</p>
+            </Card>
+          ) : displayMatches.length > 0 ? (
+            displayMatches.map((match, index) => (
+              <div key={match.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                <MatchCard match={match} />
               </div>
-              <Badge className="ml-auto bg-green-500 text-white animate-pulse">
-                {liveMatches.filter((m) => m.league === "Premier League").length} LIVE
-              </Badge>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {liveMatches
-                .filter((m) => m.league === "Premier League")
-                .map((match, index) => (
-                  <div key={match.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                    <MatchCard match={match} />
-                  </div>
-                ))}
-            </div>
-          </div>
-
-          {/* La Liga Section */}
-          <div className="animate-fade-in">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">LL</span>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">La Liga</h2>
-                <p className="text-sm text-gray-600">Spain • Matchday 21</p>
-              </div>
-              <Badge className="ml-auto bg-green-500 text-white animate-pulse">
-                {liveMatches.filter((m) => m.league === "La Liga").length} LIVE
-              </Badge>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {liveMatches
-                .filter((m) => m.league === "La Liga")
-                .map((match, index) => (
-                  <div key={match.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                    <MatchCard match={match} />
-                  </div>
-                ))}
-            </div>
-          </div>
-
-          {/* Champions League Section */}
-          <div className="animate-fade-in">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">CL</span>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Champions League</h2>
-                <p className="text-sm text-gray-600">Europe • Round of 16</p>
-              </div>
-              <Badge className="ml-auto bg-green-500 text-white animate-pulse">
-                {liveMatches.filter((m) => m.league === "Champions League").length} LIVE
-              </Badge>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {liveMatches
-                .filter((m) => m.league === "Champions League")
-                .map((match, index) => (
-                  <div key={match.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                    <MatchCard match={match} />
-                  </div>
-                ))}
-            </div>
-          </div>
-
-          
+            ))
+          ) : (
+            <Card className="p-12 text-center">
+              <Radio className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No Live Matches</h3>
+              <p className="text-gray-600">Check back soon for live match updates</p>
+            </Card>
+          )}
         </div>
-
-        {/* No matches message if filtered */}
-        {liveMatches.length === 0 && (
-          <Card className="p-12 text-center">
-            <Radio className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No Live Matches</h3>
-            <p className="text-gray-600">Check back soon for live match updates</p>
-          </Card>
-        )}
       </main>
-      <Footer/>
+      <Footer />
     </div>
   )
 }
