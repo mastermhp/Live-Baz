@@ -1,49 +1,28 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Header from "@/components/header"
 import MatchCard from "@/components/match-card"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Flame, Filter, Radio, TrendingUp, Clock } from "lucide-react"
 import Footer from "@/components/footer"
-import { getLiveMatches, getUpcomingMatches } from "@/lib/api-football"
+import { useLiveMatchesCache } from "@/lib/swr-config"
 import { transformMatches } from "@/lib/transform-api-data"
+import { useUpcomingMatchesCache } from "@/lib/swr-config"
 
 export default function LivePage() {
   const [filter, setFilter] = useState("all")
-  const [liveMatches, setLiveMatches] = useState([])
-  const [upcomingMatches, setUpcomingMatches] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [liveCount, setLiveCount] = useState(0)
 
-  useEffect(() => {
-    const fetchMatches = async () => {
-      try {
-        setLoading(true)
-        const [liveData, upcomingData] = await Promise.all([getLiveMatches(), getUpcomingMatches(1)])
+  const { matches: liveMatches, loading: liveLoading } = useLiveMatchesCache()
+  const { matches: upcomingMatches, loading: upcomingLoading } = useUpcomingMatchesCache(1)
 
-        const transformedLive = transformMatches(liveData)
-        const transformedUpcoming = transformMatches(upcomingData)
+  const transformedLive = Array.isArray(liveMatches) ? transformMatches(liveMatches) : []
+  const transformedUpcoming = Array.isArray(upcomingMatches) ? transformMatches(upcomingMatches) : []
+  const loading = liveLoading || upcomingLoading
+  const liveCount = transformedLive.length
 
-        setLiveMatches(transformedLive)
-        setUpcomingMatches(transformedUpcoming)
-        setLiveCount(transformedLive.length)
-      } catch (error) {
-        console.error("Error fetching matches:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchMatches()
-
-    // Refresh live data every 30 seconds
-    const interval = setInterval(fetchMatches, 30000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const displayMatches = [...liveMatches, ...upcomingMatches]
+  const displayMatches = [...transformedLive, ...transformedUpcoming]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50/30 to-green-50/30">
@@ -110,7 +89,7 @@ export default function LivePage() {
         </div>
       </div>
 
-      <main className="max-w-6xl mx-auto px-4 py-12">
+      <main className="max-w-7xl mx-auto px-4 py-12">
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-4 mb-8 animate-slide-up">
           <Button variant={filter === "all" ? "default" : "outline"} onClick={() => setFilter("all")} className="gap-2">
@@ -134,10 +113,10 @@ export default function LivePage() {
           </Button>
         </div>
 
-        {/* Live Matches Grid */}
-        <div className="space-y-8">
+        {/* Live Matches Grid - Changed from space-y-8 to grid-cols-3 for 3 cards per row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
-            <Card className="p-12 text-center">
+            <Card className="p-12 text-center col-span-full">
               <div className="animate-spin inline-block">
                 <Radio className="h-16 w-16 text-gray-400" />
               </div>
@@ -145,12 +124,16 @@ export default function LivePage() {
             </Card>
           ) : displayMatches.length > 0 ? (
             displayMatches.map((match, index) => (
-              <div key={match.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+              <div
+                key={`${match.id}-${match.status}`}
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
                 <MatchCard match={match} />
               </div>
             ))
           ) : (
-            <Card className="p-12 text-center">
+            <Card className="p-12 text-center col-span-full">
               <Radio className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-bold text-gray-900 mb-2">No Live Matches</h3>
               <p className="text-gray-600">Check back soon for live match updates</p>
