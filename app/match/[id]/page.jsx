@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { use } from "react"
 import Header from "@/components/header"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -73,6 +74,8 @@ const cardVariants = {
 }
 
 export default function MatchDetailsPage({ params }) {
+  const unwrappedParams = use(params)
+
   const [match, setMatch] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -80,8 +83,8 @@ export default function MatchDetailsPage({ params }) {
   useEffect(() => {
     const fetchMatchDetails = async () => {
       try {
-        console.log("[v0] Fetching match details for ID:", params.id)
-        const response = await fetch(`/api/matches/${params.id}`)
+        console.log("[v0] Fetching match details for ID:", unwrappedParams.id)
+        const response = await fetch(`/api/matches/${unwrappedParams.id}`)
 
         if (!response.ok) {
           throw new Error(`Failed to fetch match: ${response.status}`)
@@ -105,7 +108,7 @@ export default function MatchDetailsPage({ params }) {
     }
 
     fetchMatchDetails()
-  }, [params.id])
+  }, [unwrappedParams.id])
 
   if (loading) {
     return (
@@ -183,7 +186,15 @@ export default function MatchDetailsPage({ params }) {
                 >
                   <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg shadow-green-500/30">
                     <span className="h-2 w-2 rounded-full bg-white mr-2 animate-pulse" />
-                    {fixture?.status === "LIVE" ? `LIVE ${fixture?.elapsed}'` : fixture?.status}
+                    {fixture?.status === "LIVE"
+                      ? `LIVE ${
+                          typeof fixture?.elapsed === "object"
+                            ? fixture?.elapsed?.elapsed || fixture?.elapsed?.short || ""
+                            : fixture?.elapsed || ""
+                        }'`
+                      : typeof fixture?.status === "object"
+                        ? fixture?.status?.long || fixture?.status?.short || "TBA"
+                        : fixture?.status || "TBA"}
                   </Badge>
                 </motion.div>
               </div>

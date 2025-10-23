@@ -22,13 +22,10 @@ export default function MatchCard({ match }) {
         <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/20 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         <div className="relative z-10">
-          {/* League and time */}
-          <div className="flex items-center justify-between mb-3 md:mb-4 flex-wrap gap-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 md:px-3 py-1 rounded-full">
-                {match.league}
-              </span>
-            </div>
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 md:px-3 py-1 rounded-full">
+              {match.league}
+            </span>
             {isLive ? (
               <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-lg animate-pulse-subtle text-xs md:text-sm">
                 <Flame className="h-3 w-3 mr-1" />
@@ -42,38 +39,51 @@ export default function MatchCard({ match }) {
             )}
           </div>
 
-          <div className="space-y-3 md:space-y-4 mb-4 md:mb-5">
-            {/* Home team */}
-            <div className="flex items-center justify-between group/team">
-              <div className="flex items-center gap-2 md:gap-3 flex-1">
-                <div className="relative h-8 md:h-10 w-8 md:w-10 rounded-lg md:rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shrink-0 group-hover/team:scale-110 transition-transform duration-300 shadow-md">
-                  <span className="text-xs font-bold text-blue-700">{match.homeTeam.slice(0, 3).toUpperCase()}</span>
+          <div className="mb-4 md:mb-5">
+            {/* Home Team */}
+            <div className="flex items-center justify-between mb-3 md:mb-4 group/team">
+              <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                <div className="relative h-10 md:h-12 w-10 md:w-12 rounded-lg md:rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shrink-0 group-hover/team:scale-110 transition-transform duration-300 shadow-md">
+                  <span className="text-xs md:text-sm font-bold text-blue-700">
+                    {match.homeTeam.slice(0, 3).toUpperCase()}
+                  </span>
                   <div className="absolute inset-0 rounded-lg md:rounded-xl bg-blue-500 opacity-0 group-hover/team:opacity-20 transition-opacity duration-300" />
                 </div>
-                <span className="font-bold text-sm md:text-base text-gray-900 group-hover/team:text-blue-600 transition-colors">
+                <span className="font-bold text-sm md:text-base text-gray-900 group-hover/team:text-blue-600 transition-colors truncate">
                   {match.homeTeam}
                 </span>
               </div>
               {isLive && (
-                <span className="text-2xl md:text-3xl font-bold text-gray-900 tabular-nums animate-scale-in">
+                <span className="text-2xl md:text-3xl font-bold text-gray-900 tabular-nums animate-scale-in ml-2 shrink-0">
                   {match.homeScore}
                 </span>
               )}
             </div>
 
-            {/* Away team */}
+            {/* Score Divider - Only show in live matches */}
+            {isLive && (
+              <div className="flex items-center justify-center mb-3 md:mb-4">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+                <span className="px-3 text-gray-400 text-sm font-semibold">vs</span>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+              </div>
+            )}
+
+            {/* Away Team */}
             <div className="flex items-center justify-between group/team">
-              <div className="flex items-center gap-2 md:gap-3 flex-1">
-                <div className="relative h-8 md:h-10 w-8 md:w-10 rounded-lg md:rounded-xl bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center shrink-0 group-hover/team:scale-110 transition-transform duration-300 shadow-md">
-                  <span className="text-xs font-bold text-green-700">{match.awayTeam.slice(0, 3).toUpperCase()}</span>
+              <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                <div className="relative h-10 md:h-12 w-10 md:w-12 rounded-lg md:rounded-xl bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center shrink-0 group-hover/team:scale-110 transition-transform duration-300 shadow-md">
+                  <span className="text-xs md:text-sm font-bold text-green-700">
+                    {match.awayTeam.slice(0, 3).toUpperCase()}
+                  </span>
                   <div className="absolute inset-0 rounded-lg md:rounded-xl bg-green-500 opacity-0 group-hover/team:opacity-20 transition-opacity duration-300" />
                 </div>
-                <span className="font-bold text-sm md:text-base text-gray-900 group-hover/team:text-green-600 transition-colors">
+                <span className="font-bold text-sm md:text-base text-gray-900 group-hover/team:text-green-600 transition-colors truncate">
                   {match.awayTeam}
                 </span>
               </div>
               {isLive && (
-                <span className="text-2xl md:text-3xl font-bold text-gray-900 tabular-nums animate-scale-in">
+                <span className="text-2xl md:text-3xl font-bold text-gray-900 tabular-nums animate-scale-in ml-2 shrink-0">
                   {match.awayScore}
                 </span>
               )}
