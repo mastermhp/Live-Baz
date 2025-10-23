@@ -7,11 +7,6 @@ export async function GET(request) {
   try {
     console.log("[v0] === UPCOMING MATCHES DEBUG ===")
     console.log("[v0] API_KEY exists:", !!API_KEY)
-    console.log("[v0] API_KEY value:", API_KEY ? `${API_KEY.substring(0, 5)}...` : "NOT SET")
-    console.log(
-      "[v0] All env keys:",
-      Object.keys(process.env).filter((k) => k.includes("FOOTBALL") || k.includes("API")),
-    )
 
     if (!API_KEY) {
       console.error("[v0] CRITICAL: API key not configured. Check Vars section in v0 sidebar.")
@@ -22,48 +17,41 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url)
-    const days = searchParams.get("days") || "7"
+    const days = searchParams.get("days") || "1"
 
     const today = new Date().toISOString().split("T")[0]
 
-    // Fetch matches for today and next N days by querying each date
-    const allMatches = []
-    const daysToFetch = Number.parseInt(days)
+    // This reduces API calls from 7 per request to just 1
+    console.log("[v0] Fetching matches for date:", today)
 
-    for (let i = 0; i < daysToFetch; i++) {
-      const queryDate = new Date(Date.now() + i * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
-      console.log("[v0] Fetching matches for date:", queryDate)
+    const response = await fetch(`${API_BASE}/fixtures?date=${today}`, {
+      headers: {
+        "x-apisports-key": API_KEY,
+      },
+    })
 
-      const response = await fetch(`${API_BASE}/fixtures?date=${queryDate}`, {
-        headers: {
-          "x-apisports-key": API_KEY,
-        },
-      })
+    console.log("[v0] API Response Status:", response.status)
 
-      console.log("[v0] API Response Status for", queryDate, ":", response.status)
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error("[v0] API Error Response:", errorText)
-        continue
-      }
-
-      const data = await response.json()
-      if (data.response && Array.isArray(data.response)) {
-        allMatches.push(...data.response)
-      }
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("[v0] API Error Response:", errorText)
+      return NextResponse.json(
+        { error: `API returned ${response.status}`, details: errorText },
+        { status: response.status },
+      )
     }
 
-    console.log("[v0] Upcoming matches data received, total results:", allMatches.length)
+    const data = await response.json()
+    console.log("[v0] Upcoming matches data received, total results:", data.results)
 
     // Return in same format as API
     return NextResponse.json({
       get: "fixtures",
-      parameters: { date: today, days: daysToFetch },
+      parameters: { date: today, days: 1 },
       errors: {},
-      results: allMatches.length,
+      results: data.results || 0,
       paging: { current: 1, total: 1 },
-      response: allMatches,
+      response: data.response || [],
     })
   } catch (error) {
     console.error("[v0] Error fetching upcoming matches:", error)

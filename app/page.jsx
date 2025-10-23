@@ -33,7 +33,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-white">
       <Header />
 
-      <main className="max-w-7xl mx-auto px-4 py-6 md:py-8">
+      <main className="max-w-7xl mx-auto px-4 py-6 md:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
           {/* Sidebar - Top Leagues */}
           <aside className="lg:col-span-1">
@@ -134,7 +134,7 @@ export default function HomePage() {
             </section>
 
             {/* Expert Analysis Section */}
-            <section className="mb-12 md:mb-16">
+            <section className="">
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 md:mb-8 animate-slide-up gap-4">
                 <div className="flex items-center gap-4">
                   <div className="relative">
@@ -214,9 +214,10 @@ export default function HomePage() {
 
       <main className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         <section className="py-12 md:py-16 animate-fade-in">
-          <Card className="relative h-96 md:h-[600px] overflow-hidden border-0 shadow-2xl">
+          <Card className="relative h-96 md:h-[500px] overflow-hidden border-0 shadow-2xl">
             {/* Gradient background with low opacity */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 opacity-70" />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 opacity-60" />
+            <div className="absolute inset-0 bg-gradient-to-br from-black/90 via-black/90 to-black/80 opacity-90" />
 
             {/* Image layer between gradient and content */}
             <img
@@ -231,17 +232,17 @@ export default function HomePage() {
 
             {/* Foreground content */}
             <div className="relative z-10 p-6 md:p-12 lg:p-16 text-center flex flex-col justify-center h-full">
-              <div className="inline-flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-white/25 text-black/60 text-xs md:text-sm font-semibold mb-4 md:mb-6 animate-bounce-subtle backdrop-blur-md w-fit mx-auto">
-                <Sparkles className="h-3 md:h-4 w-3 md:w-4 text-blue-600" />
+              <div className="inline-flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-white/25 text-black/50 text-xs md:text-sm font-semibold mb-4 md:mb-6 animate-bounce-subtle backdrop-blur-md w-fit mx-auto">
+                <Sparkles className="h-3 md:h-4 w-3 md:w-4 text-blue-200" />
                 Join 1M+ Sports Fans
               </div>
 
               {/* Gradient Headline */}
-              <h2 className="text-2xl md:text-4xl lg:text-5xl font-extrabold mb-4 md:mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-800 to-green-700 drop-shadow-[0_0_10px_rgba(0,0,0,0.4)]">
+              <h2 className="text-2xl md:text-4xl lg:text-5xl font-extrabold mb-4 md:mb-6 text-transparent bg-clip-text bg-gradient-to-r from-black/10 via-blue-600 to-green-700 drop-shadow-[0_0_10px_rgba(0,0,0,0.4)]">
                 Never Miss a Match Again
               </h2>
 
-              <p className="text-sm md:text-lg lg:text-xl text-black/45 mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
+              <p className="text-sm md:text-lg lg:text-xl text-gray-400 mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
                 Create your free account to get personalized match
                 notifications, follow your favorite teams, and access exclusive
                 expert analysis and predictions.
@@ -250,16 +251,16 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center">
                 <Button
                   size="lg"
-                  className="bg-white text-blue-700 hover:bg-gray-100 font-bold px-6 md:px-8 h-10 md:h-14 rounded-lg md:rounded-xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 text-sm md:text-base"
+                  className="bg-white text-blue-600 hover:bg-gray-200 font-bold px-8 md:px-10 h-10 md:h-11 rounded-lg md:rounded-xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 text-sm md:text-base"
                 >
                   Get Started Free
-                  <ArrowRight className="h-4 md:h-5 w-4 md:w-5 ml-2" />
+                  <ArrowRight className="h-4 md:h-5 w-4 md:w-5 ml-1" />
                 </Button>
 
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-2 border-white text-white hover:bg-white/10 font-semibold px-6 md:px-8 h-10 md:h-14 rounded-lg md:rounded-xl bg-transparent text-sm md:text-base"
+                  className="border-1 border-white text-white hover:bg-white/10 font-semibold px-6 md:px-8 h-10 md:h-11 rounded-lg md:rounded-xl bg-transparent text-sm md:text-base"
                 >
                   Learn More
                 </Button>

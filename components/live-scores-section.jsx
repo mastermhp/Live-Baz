@@ -56,9 +56,11 @@ export default function LiveScoresSection() {
           transition={{ duration: 0.6 }}
           className="mb-8 md:mb-12"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-1 w-12 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full" />
-            <h2 className="text-2xl md:text-4xl font-bold text-foreground">
+          <div className="flex items-center gap-1 mb-4">
+            <div className="h-1 w-2 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full" />
+            <div className="h-2 w-3 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full" />
+            <div className="h-2 w-4 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full" />
+            <h2 className="text-2xl md:text-4xl font-bold text-foreground ml-4">
               Live Scores
             </h2>
           </div>
