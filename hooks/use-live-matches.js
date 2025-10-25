@@ -5,7 +5,7 @@ import { transformMatches } from "@/lib/transform-api-data"
 
 export function useLiveMatches() {
   const { matches, loading, error } = useLiveMatchesCache()
-  const transformed = transformMatches({ response: matches })
+  const transformed = Array.isArray(matches) ? transformMatches(matches) : []
 
   return {
     matches: transformed,
