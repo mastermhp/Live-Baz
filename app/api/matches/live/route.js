@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 
-const API_KEY = process.env.FOOTBALL_API_KEY
-const API_BASE = "https://v3.football.api-sports.io"
+const API_KEY = process.env.RAPIDAPI_KEY
+const API_HOST = "api-football-v1.p.rapidapi.com"
+const API_BASE = "https://api-football-v1.p.rapidapi.com"
 
 export async function GET() {
   try {
@@ -10,22 +11,23 @@ export async function GET() {
     console.log("[v0] API_KEY value:", API_KEY ? `${API_KEY.substring(0, 5)}...` : "NOT SET")
     console.log(
       "[v0] All env keys:",
-      Object.keys(process.env).filter((k) => k.includes("FOOTBALL") || k.includes("API")),
+      Object.keys(process.env).filter((k) => k.includes("RAPIDAPI") || k.includes("API")),
     )
 
     if (!API_KEY) {
       console.error("[v0] CRITICAL: API key not configured. Check Vars section in v0 sidebar.")
       return NextResponse.json(
-        { error: "API key not configured. Please add FOOTBALL_API_KEY to Vars section." },
+        { error: "API key not configured. Please add RAPIDAPI_KEY to Vars section." },
         { status: 500 },
       )
     }
 
     console.log("[v0] Fetching live matches")
 
-    const response = await fetch(`${API_BASE}/fixtures?live=all`, {
+    const response = await fetch(`${API_BASE}/v3/fixtures?live=all`, {
       headers: {
-        "x-apisports-key": API_KEY,
+        "x-rapidapi-host": API_HOST,
+        "x-rapidapi-key": API_KEY,
       },
     })
 

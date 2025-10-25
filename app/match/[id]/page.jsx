@@ -5,7 +5,7 @@ import { use } from "react"
 import Header from "@/components/header"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, Castle as Whistle, Activity, ArrowRight } from "lucide-react"
+import { MapPin, Castle as Whistle, Activity, ArrowRight, Users } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import Image from "next/image"
@@ -73,17 +73,41 @@ const cardVariants = {
   },
 }
 
+const matchInfoVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15, delayChildren: 0.2 },
+  },
+}
+
+const statsVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15, delayChildren: 0.2 },
+  },
+}
+
+const eventsVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15, delayChildren: 0.2 },
+  },
+}
+
 export default function MatchDetailsPage({ params }) {
   const unwrappedParams = use(params)
 
   const [match, setMatch] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [refreshInterval, setRefreshInterval] = useState(null)
 
   useEffect(() => {
     const fetchMatchDetails = async () => {
       try {
-        console.log("[v0] Fetching match details for ID:", unwrappedParams.id)
         const response = await fetch(`/api/matches/${unwrappedParams.id}`)
 
         if (!response.ok) {
@@ -91,11 +115,26 @@ export default function MatchDetailsPage({ params }) {
         }
 
         const data = await response.json()
-        console.log("[v0] Match data received:", data)
 
         if (data.response && data.response.length > 0) {
           const fixture = data.response[0]
           setMatch(fixture)
+
+          if (
+            fixture.fixture?.status?.short === "LIVE" ||
+            fixture.fixture?.status?.short === "1H" ||
+            fixture.fixture?.status?.short === "2H"
+          ) {
+            if (!refreshInterval) {
+              const interval = setInterval(() => {
+                fetchMatchDetails()
+              }, 2000)
+              setRefreshInterval(interval)
+            }
+          } else if (refreshInterval) {
+            clearInterval(refreshInterval)
+            setRefreshInterval(null)
+          }
         } else {
           setError("Match not found")
         }
@@ -108,7 +147,13 @@ export default function MatchDetailsPage({ params }) {
     }
 
     fetchMatchDetails()
-  }, [unwrappedParams.id])
+
+    return () => {
+      if (refreshInterval) {
+        clearInterval(refreshInterval)
+      }
+    }
+  }, [unwrappedParams.id, refreshInterval])
 
   if (loading) {
     return (
@@ -146,6 +191,7 @@ export default function MatchDetailsPage({ params }) {
   const fixture = match.fixture
   const stats = match.statistics || []
   const events = match.events || []
+  const lineups = match.lineups || []
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -269,7 +315,7 @@ export default function MatchDetailsPage({ params }) {
 
               {/* Match Info */}
               <motion.div
-                variants={containerVariants}
+                variants={matchInfoVariants}
                 initial="hidden"
                 animate="visible"
                 className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-600 border-t border-blue-200 pt-6"
@@ -282,6 +328,12 @@ export default function MatchDetailsPage({ params }) {
                   <Whistle className="h-4 w-4 text-blue-600" />
                   {fixture?.referee || "TBA"}
                 </motion.div>
+                {fixture?.attendance && (
+                  <motion.div variants={itemVariants} className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-blue-600" />
+                    {fixture.attendance.toLocaleString()} Attendance
+                  </motion.div>
+                )}
               </motion.div>
             </div>
           </Card>
@@ -290,7 +342,6 @@ export default function MatchDetailsPage({ params }) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Match Statistics */}
             {stats.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -302,32 +353,61 @@ export default function MatchDetailsPage({ params }) {
                     <Activity className="h-6 w-6 text-blue-600" />
                     <h3 className="text-xl font-bold text-gray-900">Match Statistics</h3>
                   </div>
-                  <motion.div variants={containerVariants} initial="hidden" whileInView="visible" className="space-y-5">
+                  <motion.div variants={statsVariants} initial="hidden" whileInView="visible" className="space-y-5">
                     {stats.map((stat, idx) => {
-                      const homeVal = stat.statistics?.find((s) => s.type === "Shots on Goal")?.value || 0
-                      const awayVal = stat.statistics?.find((s) => s.type === "Shots on Goal")?.value || 0
+                      const homeStats = stat.statistics || []
+                      const awayStats = stats[1]?.statistics || []
+
+                      const getStatValue = (stats, type) => {
+                        const s = stats.find((s) => s.type === type)
+                        return s ? Number.parseInt(s.value) || 0 : 0
+                      }
+
+                      const statTypes = [
+                        { label: "Shots on Goal", key: "Shots on Goal" },
+                        { label: "Shots", key: "Shots" },
+                        { label: "Possession %", key: "Ball Possession" },
+                        { label: "Passes", key: "Passes" },
+                        { label: "Fouls", key: "Fouls" },
+                        { label: "Corners", key: "Corner Kicks" },
+                      ]
+
                       return (
-                        <motion.div key={idx} variants={itemVariants}>
-                          <div className="flex items-center justify-between text-sm mb-3">
-                            <span className="font-semibold text-blue-600">{homeVal}</span>
-                            <span className="text-gray-600 capitalize text-center flex-1 px-4">Shots on Goal</span>
-                            <span className="font-semibold text-green-600">{awayVal}</span>
-                          </div>
-                          <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden flex">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              whileInView={{ width: `${(homeVal / (homeVal + awayVal || 1)) * 100}%` }}
-                              transition={{ delay: 0.2, duration: 0.8 }}
-                              className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
-                            />
-                            <motion.div
-                              initial={{ width: 0 }}
-                              whileInView={{ width: `${(awayVal / (homeVal + awayVal || 1)) * 100}%` }}
-                              transition={{ delay: 0.2, duration: 0.8 }}
-                              className="bg-gradient-to-r from-green-500 to-green-600 rounded-full"
-                            />
-                          </div>
-                        </motion.div>
+                        <div key={idx} className="space-y-4">
+                          {statTypes.map((statType) => {
+                            const homeVal = getStatValue(homeStats, statType.key)
+                            const awayVal = getStatValue(awayStats, statType.key)
+                            const total = homeVal + awayVal || 1
+                            const homePercent = (homeVal / total) * 100
+                            const awayPercent = (awayVal / total) * 100
+
+                            return (
+                              <motion.div key={statType.key} variants={itemVariants}>
+                                <div className="flex items-center justify-between text-sm mb-2">
+                                  <span className="font-semibold text-blue-600">{homeVal}</span>
+                                  <span className="text-gray-600 capitalize text-center flex-1 px-4 font-medium">
+                                    {statType.label}
+                                  </span>
+                                  <span className="font-semibold text-green-600">{awayVal}</span>
+                                </div>
+                                <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden flex">
+                                  <motion.div
+                                    initial={{ width: 0 }}
+                                    whileInView={{ width: `${homePercent}%` }}
+                                    transition={{ delay: 0.2, duration: 0.8 }}
+                                    className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
+                                  />
+                                  <motion.div
+                                    initial={{ width: 0 }}
+                                    whileInView={{ width: `${awayPercent}%` }}
+                                    transition={{ delay: 0.2, duration: 0.8 }}
+                                    className="bg-gradient-to-r from-green-500 to-green-600 rounded-full"
+                                  />
+                                </div>
+                              </motion.div>
+                            )
+                          })}
+                        </div>
                       )
                     })}
                   </motion.div>
@@ -344,7 +424,7 @@ export default function MatchDetailsPage({ params }) {
               >
                 <Card className="p-6 bg-white border-2 border-blue-200 shadow-lg">
                   <h3 className="text-xl font-bold text-gray-900 mb-6">Match Events</h3>
-                  <motion.div variants={containerVariants} initial="hidden" whileInView="visible" className="space-y-4">
+                  <motion.div variants={eventsVariants} initial="hidden" whileInView="visible" className="space-y-4">
                     {events.map((event, index) => (
                       <motion.div key={index} variants={itemVariants} className="flex items-start gap-4">
                         <motion.div
@@ -387,6 +467,61 @@ export default function MatchDetailsPage({ params }) {
                 </Card>
               </motion.div>
             )}
+
+            {lineups.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+                <Card className="p-6 bg-white border-2 border-blue-200 shadow-lg">
+                  <div className="flex items-center gap-3 mb-6">
+                    <Users className="h-6 w-6 text-blue-600" />
+                    <h3 className="text-xl font-bold text-gray-900">Team Lineups</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {lineups.map((lineup, idx) => (
+                      <motion.div key={idx} variants={itemVariants} className="space-y-4">
+                        <div className="flex items-center gap-3 pb-4 border-b border-blue-200">
+                          {lineup.team?.logo && (
+                            <Image
+                              src={lineup.team.logo || "/placeholder.svg"}
+                              alt={lineup.team.name}
+                              width={40}
+                              height={40}
+                              className="rounded-full object-contain"
+                            />
+                          )}
+                          <h4 className="font-bold text-gray-900">{lineup.team?.name}</h4>
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-sm font-semibold text-blue-600 mb-3">Starting XI</p>
+                          {lineup.startXI?.map((player, pidx) => (
+                            <div key={pidx} className="flex items-center gap-2 text-sm text-gray-700">
+                              <span className="font-semibold text-gray-900 w-6">{player.player?.number}</span>
+                              <span>{player.player?.name}</span>
+                              <span className="text-xs text-gray-500">({player.player?.pos})</span>
+                            </div>
+                          ))}
+                        </div>
+                        {lineup.substitutes?.length > 0 && (
+                          <div className="space-y-2 pt-4 border-t border-gray-200">
+                            <p className="text-sm font-semibold text-green-600 mb-3">Substitutes</p>
+                            {lineup.substitutes?.map((player, pidx) => (
+                              <div key={pidx} className="flex items-center gap-2 text-sm text-gray-600">
+                                <span className="font-semibold text-gray-800 w-6">{player.player?.number}</span>
+                                <span>{player.player?.name}</span>
+                                <span className="text-xs text-gray-500">({player.player?.pos})</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
+                </Card>
+              </motion.div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -410,6 +545,26 @@ export default function MatchDetailsPage({ params }) {
                 </motion.div>
               </Link>
             </motion.div>
+
+            {fixture?.venue && (
+              <motion.div
+                initial={{ opacity: 0, x: 40 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+                <Card className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200">
+                  <div className="flex items-center gap-2 mb-4">
+                    <MapPin className="h-5 w-5 text-blue-600" />
+                    <h4 className="font-bold text-gray-900">Venue</h4>
+                  </div>
+                  <p className="text-sm font-semibold text-gray-900 mb-1">{fixture.venue.name}</p>
+                  <p className="text-xs text-gray-600">{fixture.venue.city}</p>
+                  {fixture.attendance && (
+                    <p className="text-xs text-gray-600 mt-2">Attendance: {fixture.attendance.toLocaleString()}</p>
+                  )}
+                </Card>
+              </motion.div>
+            )}
           </div>
         </div>
 
@@ -428,7 +583,7 @@ export default function MatchDetailsPage({ params }) {
           <motion.div
             variants={containerVariants}
             initial="hidden"
-            whileInView="visible"
+            animate="visible"
             viewport={{ once: true, margin: "-100px" }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >

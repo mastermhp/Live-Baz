@@ -1,20 +1,24 @@
 import { NextResponse } from "next/server"
 
-const API_KEY = process.env.FOOTBALL_API_KEY
-const API_BASE = "https://v3.football.api-sports.io"
+const API_KEY = process.env.RAPIDAPI_KEY
+const API_HOST = "api-football-v1.p.rapidapi.com"
+const API_BASE = "https://api-football-v1.p.rapidapi.com"
 
 export async function GET(request, { params }) {
   try {
+    const { id } = await params
+
     if (!API_KEY) {
       console.error("[v0] CRITICAL: API key not configured")
       return NextResponse.json({ error: "API key not configured" }, { status: 500 })
     }
 
-    console.log("[v0] Fetching match details for ID:", params.id)
+    console.log("[v0] Fetching match details for ID:", id)
 
-    const response = await fetch(`${API_BASE}/fixtures?id=${params.id}`, {
+    const response = await fetch(`${API_BASE}/v3/fixtures?id=${id}`, {
       headers: {
-        "x-apisports-key": API_KEY,
+        "x-rapidapi-host": API_HOST,
+        "x-rapidapi-key": API_KEY,
       },
     })
 
