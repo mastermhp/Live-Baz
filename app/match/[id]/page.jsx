@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { use } from "react"
-import Header from "@/components/header"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { MapPin, Users, TrendingUp, Clock, Target, Shield } from "lucide-react"
-import Link from "next/link"
-import { motion } from "framer-motion"
-import Image from "next/image"
-import Footer from "@/components/footer"
+import { useEffect, useState } from "react";
+import { use } from "react";
+import Header from "@/components/header";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { MapPin, Users, TrendingUp, Clock, Target, Shield } from "lucide-react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import Footer from "@/components/footer";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -17,57 +17,58 @@ const containerVariants = {
     opacity: 1,
     transition: { staggerChildren: 0.1, delayChildren: 0.2 },
   },
-}
+};
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-}
+};
 
 export default function MatchDetailsPage({ params }) {
-  const unwrappedParams = use(params)
-  const [match, setMatch] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [refreshInterval, setRefreshInterval] = useState(null)
+  const unwrappedParams = use(params);
+  const [match, setMatch] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshInterval, setRefreshInterval] = useState(null);
 
   useEffect(() => {
     const fetchMatchDetails = async () => {
       try {
-        const response = await fetch(`/api/matches/${unwrappedParams.id}`)
-        if (!response.ok) throw new Error(`Failed to fetch match: ${response.status}`)
+        const response = await fetch(`/api/matches/${unwrappedParams.id}`);
+        if (!response.ok)
+          throw new Error(`Failed to fetch match: ${response.status}`);
 
-        const data = await response.json()
+        const data = await response.json();
         if (data.response && data.response.length > 0) {
-          const fixture = data.response[0]
-          setMatch(fixture)
-          console.log("[v0] Match details loaded:", fixture)
+          const fixture = data.response[0];
+          setMatch(fixture);
+          console.log("[v0] Match details loaded:", fixture);
 
           if (["LIVE", "1H", "2H"].includes(fixture.fixture?.status?.short)) {
             if (!refreshInterval) {
-              const interval = setInterval(() => fetchMatchDetails(), 2000)
-              setRefreshInterval(interval)
+              const interval = setInterval(() => fetchMatchDetails(), 2000);
+              setRefreshInterval(interval);
             }
           } else if (refreshInterval) {
-            clearInterval(refreshInterval)
-            setRefreshInterval(null)
+            clearInterval(refreshInterval);
+            setRefreshInterval(null);
           }
         } else {
-          setError("Match not found")
+          setError("Match not found");
         }
       } catch (err) {
-        console.error("[v0] Error fetching match:", err)
-        setError(err.message)
+        console.error("[v0] Error fetching match:", err);
+        setError(err.message);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchMatchDetails()
+    fetchMatchDetails();
     return () => {
-      if (refreshInterval) clearInterval(refreshInterval)
-    }
-  }, [unwrappedParams.id, refreshInterval])
+      if (refreshInterval) clearInterval(refreshInterval);
+    };
+  }, [unwrappedParams.id, refreshInterval]);
 
   if (loading) {
     return (
@@ -78,7 +79,7 @@ export default function MatchDetailsPage({ params }) {
           <p className="text-gray-300 text-lg">Loading match details...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (error || !match) {
@@ -87,25 +88,30 @@ export default function MatchDetailsPage({ params }) {
         <Header />
         <main className="max-w-6xl mx-auto px-4 py-8">
           <Card className="p-8 text-center bg-red-500/10 border-red-500/30">
-            <p className="text-red-400 font-semibold text-lg">{error || "Match not found"}</p>
-            <Link href="/" className="text-blue-400 hover:text-blue-300 mt-4 inline-block">
+            <p className="text-red-400 font-semibold text-lg">
+              {error || "Match not found"}
+            </p>
+            <Link
+              href="/"
+              className="text-blue-400 hover:text-blue-300 mt-4 inline-block"
+            >
               ← Back to Home
             </Link>
           </Card>
         </main>
       </div>
-    )
+    );
   }
 
-  const homeTeam = match.teams?.home
-  const awayTeam = match.teams?.away
-  const homeScore = match.goals?.home || 0
-  const awayScore = match.goals?.away || 0
-  const league = match.league
-  const fixture = match.fixture
-  const stats = match.statistics || []
-  const events = match.events || []
-  const lineups = match.lineups || []
+  const homeTeam = match.teams?.home;
+  const awayTeam = match.teams?.away;
+  const homeScore = match.goals?.home || 0;
+  const awayScore = match.goals?.away || 0;
+  const league = match.league;
+  const fixture = match.fixture;
+  const stats = match.statistics || [];
+  const events = match.events || [];
+  const lineups = match.lineups || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -134,7 +140,7 @@ export default function MatchDetailsPage({ params }) {
           <div
             className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-2xl"
             style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1200&h=400&fit=crop')`,
+              backgroundImage: `url('/stadium.jpg')`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
@@ -156,8 +162,12 @@ export default function MatchDetailsPage({ params }) {
                     />
                   )}
                   <div>
-                    <p className="text-sm font-semibold text-blue-400">{league?.name}</p>
-                    <p className="text-xs text-gray-400">Round {league?.round}</p>
+                    <p className="text-sm font-semibold text-blue-400">
+                      {league?.name}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Round {league?.round}
+                    </p>
                   </div>
                 </div>
 
@@ -173,7 +183,6 @@ export default function MatchDetailsPage({ params }) {
                   </Badge>
                 </motion.div>
               </div>
-
               {/* Score Display */}
               <div className="flex items-center justify-between gap-8">
                 {/* Home Team */}
@@ -193,10 +202,14 @@ export default function MatchDetailsPage({ params }) {
                         className="object-contain"
                       />
                     ) : (
-                      <span className="text-white font-bold text-3xl">{homeTeam?.name?.slice(0, 3).toUpperCase()}</span>
+                      <span className="text-white font-bold text-3xl">
+                        {homeTeam?.name?.slice(0, 3).toUpperCase()}
+                      </span>
                     )}
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">{homeTeam?.name}</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">
+                    {homeTeam?.name}
+                  </h2>
                   <p className="text-sm text-blue-300">Home</p>
                 </motion.div>
 
@@ -212,7 +225,7 @@ export default function MatchDetailsPage({ params }) {
                       {homeScore}
                     </span>
                   </div>
-                  <span className="text-4xl text-gray-500 font-light">:</span>
+                  <span className="text-4xl text-blue-600 font-bold">:</span>
                   <div className="text-center">
                     <span className="text-7xl md:text-8xl font-black bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
                       {awayScore}
@@ -237,35 +250,57 @@ export default function MatchDetailsPage({ params }) {
                         className="object-contain"
                       />
                     ) : (
-                      <span className="text-white font-bold text-3xl">{awayTeam?.name?.slice(0, 3).toUpperCase()}</span>
+                      <span className="text-white font-bold text-3xl">
+                        {awayTeam?.name?.slice(0, 3).toUpperCase()}
+                      </span>
                     )}
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">{awayTeam?.name}</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">
+                    {awayTeam?.name}
+                  </h2>
                   <p className="text-sm text-emerald-300">Away</p>
                 </motion.div>
               </div>
 
-              {/* Match Info */}
               <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                className="flex flex-wrap items-center justify-center gap-6 md:gap-12 text-sm text-gray-300 border-t border-slate-700 mt-8 pt-8"
+                className="relative flex flex-wrap items-center justify-center gap-6 md:gap-12 text-sm text-gray-300 border-t border-slate-700 mt-8 pt-8 p-6 rounded-2xl overflow-hidden"
               >
-                <motion.div variants={itemVariants} className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-blue-400" />
-                  <span>{fixture?.venue?.name || "TBA"}</span>
-                </motion.div>
-                <motion.div variants={itemVariants} className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-blue-400" />
-                  <span>{new Date(fixture?.date).toLocaleString()}</span>
-                </motion.div>
-                {fixture?.attendance && (
-                  <motion.div variants={itemVariants} className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-blue-400" />
-                    <span>{fixture.attendance.toLocaleString()} Attendance</span>
+                {/* Background image */}
+                <div className="absolute inset-0 bg-cover bg-center opacity-20 blur-sm"></div>
+                {/* Dark overlay */}
+                <div className="absolute inset-0 bg-black/50"></div>
+
+                {/* Content */}
+                <div className="relative z-10 flex flex-wrap items-center justify-center gap-6 md:gap-12">
+                  <motion.div
+                    variants={itemVariants}
+                    className="flex items-center gap-2"
+                  >
+                    <MapPin className="h-5 w-5 text-blue-400" />
+                    <span>{fixture?.venue?.name || "TBA"}</span>
                   </motion.div>
-                )}
+                  <motion.div
+                    variants={itemVariants}
+                    className="flex items-center gap-2"
+                  >
+                    <Clock className="h-5 w-5 text-blue-400" />
+                    <span>{new Date(fixture?.date).toLocaleString()}</span>
+                  </motion.div>
+                  {fixture?.attendance && (
+                    <motion.div
+                      variants={itemVariants}
+                      className="flex items-center gap-2"
+                    >
+                      <Users className="h-5 w-5 text-blue-400" />
+                      <span>
+                        {fixture.attendance.toLocaleString()} Attendance
+                      </span>
+                    </motion.div>
+                  )}
+                </div>
               </motion.div>
             </div>
           </div>
@@ -286,7 +321,9 @@ export default function MatchDetailsPage({ params }) {
                 <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
                   <div className="flex items-center gap-3 mb-8">
                     <TrendingUp className="h-6 w-6 text-blue-400" />
-                    <h3 className="text-2xl font-bold text-white">Match Statistics</h3>
+                    <h3 className="text-2xl font-bold text-white">
+                      Match Statistics
+                    </h3>
                   </div>
 
                   <motion.div
@@ -297,41 +334,62 @@ export default function MatchDetailsPage({ params }) {
                     className="space-y-6"
                   >
                     {stats.map((stat, idx) => {
-                      const homeStats = stat.statistics || []
-                      const awayStats = stats[1]?.statistics || []
+                      const homeStats = stat.statistics || [];
+                      const awayStats = stats[1]?.statistics || [];
 
                       const getStatValue = (stats, type) => {
-                        const s = stats.find((s) => s.type === type)
-                        return s ? Number.parseInt(s.value) || 0 : 0
-                      }
+                        const s = stats.find((s) => s.type === type);
+                        return s ? Number.parseInt(s.value) || 0 : 0;
+                      };
 
                       const statTypes = [
-                        { label: "Shots on Goal", key: "Shots on Goal", icon: "🎯" },
+                        {
+                          label: "Shots on Goal",
+                          key: "Shots on Goal",
+                          icon: "🎯",
+                        },
                         { label: "Shots", key: "Shots", icon: "⚽" },
-                        { label: "Possession %", key: "Ball Possession", icon: "🔄" },
+                        {
+                          label: "Possession %",
+                          key: "Ball Possession",
+                          icon: "🔄",
+                        },
                         { label: "Passes", key: "Passes", icon: "📍" },
                         { label: "Fouls", key: "Fouls", icon: "⚠️" },
                         { label: "Corners", key: "Corner Kicks", icon: "🚩" },
-                      ]
+                      ];
 
                       return (
                         <div key={idx} className="space-y-4">
                           {statTypes.map((statType) => {
-                            const homeVal = getStatValue(homeStats, statType.key)
-                            const awayVal = getStatValue(awayStats, statType.key)
-                            const total = homeVal + awayVal || 1
-                            const homePercent = (homeVal / total) * 100
-                            const awayPercent = (awayVal / total) * 100
+                            const homeVal = getStatValue(
+                              homeStats,
+                              statType.key
+                            );
+                            const awayVal = getStatValue(
+                              awayStats,
+                              statType.key
+                            );
+                            const total = homeVal + awayVal || 1;
+                            const homePercent = (homeVal / total) * 100;
+                            const awayPercent = (awayVal / total) * 100;
 
                             return (
-                              <motion.div key={statType.key} variants={itemVariants}>
+                              <motion.div
+                                key={statType.key}
+                                variants={itemVariants}
+                              >
                                 <div className="flex items-center justify-between text-sm mb-2">
-                                  <span className="font-semibold text-blue-300">{homeVal}</span>
+                                  <span className="font-semibold text-blue-300">
+                                    {homeVal}
+                                  </span>
                                   <span className="text-gray-400 capitalize text-center flex-1 px-4 font-medium flex items-center justify-center gap-2">
                                     <span>{statType.icon}</span>
                                     {statType.label}
                                   </span>
-                                  <span className="font-semibold text-emerald-300">{awayVal}</span>
+                                  <span className="font-semibold text-emerald-300">
+                                    {awayVal}
+                                  </span>
                                 </div>
                                 <div className="h-3 bg-slate-700 rounded-full overflow-hidden flex shadow-inner">
                                   <motion.div
@@ -348,10 +406,10 @@ export default function MatchDetailsPage({ params }) {
                                   />
                                 </div>
                               </motion.div>
-                            )
+                            );
                           })}
                         </div>
-                      )
+                      );
                     })}
                   </motion.div>
                 </Card>
@@ -369,7 +427,9 @@ export default function MatchDetailsPage({ params }) {
                 <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
                   <div className="flex items-center gap-3 mb-8">
                     <Target className="h-6 w-6 text-emerald-400" />
-                    <h3 className="text-2xl font-bold text-white">Match Events</h3>
+                    <h3 className="text-2xl font-bold text-white">
+                      Match Events
+                    </h3>
                   </div>
 
                   <motion.div
@@ -400,20 +460,33 @@ export default function MatchDetailsPage({ params }) {
                                 ⚽ Goal
                               </Badge>
                             )}
-                            {event.type === "Card" && event.detail === "Yellow Card" && (
-                              <Badge className="bg-yellow-600 text-white">🟨 Yellow Card</Badge>
-                            )}
-                            {event.type === "Card" && event.detail === "Red Card" && (
-                              <Badge className="bg-red-600 text-white">🟥 Red Card</Badge>
-                            )}
+                            {event.type === "Card" &&
+                              event.detail === "Yellow Card" && (
+                                <Badge className="bg-yellow-600 text-white">
+                                  🟨 Yellow Card
+                                </Badge>
+                              )}
+                            {event.type === "Card" &&
+                              event.detail === "Red Card" && (
+                                <Badge className="bg-red-600 text-white">
+                                  🟥 Red Card
+                                </Badge>
+                              )}
                             {event.type === "subst" && (
-                              <Badge className="bg-blue-600 text-white">🔄 Substitution</Badge>
+                              <Badge className="bg-blue-600 text-white">
+                                🔄 Substitution
+                              </Badge>
                             )}
                           </div>
                           <p className="text-sm text-gray-300">
-                            <span className="font-semibold text-white">{event.player?.name}</span>
+                            <span className="font-semibold text-white">
+                              {event.player?.name}
+                            </span>
                             {event.assist?.name && (
-                              <span className="text-gray-400"> (Assist: {event.assist.name})</span>
+                              <span className="text-gray-400">
+                                {" "}
+                                (Assist: {event.assist.name})
+                              </span>
                             )}
                           </p>
                         </div>
@@ -435,7 +508,9 @@ export default function MatchDetailsPage({ params }) {
                 <Card className="p-8 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
                   <div className="flex items-center gap-3 mb-8">
                     <Shield className="h-6 w-6 text-purple-400" />
-                    <h3 className="text-2xl font-bold text-white">Team Lineups</h3>
+                    <h3 className="text-2xl font-bold text-white">
+                      Team Lineups
+                    </h3>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -456,23 +531,35 @@ export default function MatchDetailsPage({ params }) {
                             />
                           )}
                           <div>
-                            <h4 className="font-bold text-white text-lg">{lineup.team?.name}</h4>
-                            <p className="text-xs text-gray-400">Formation: {lineup.formation}</p>
+                            <h4 className="font-bold text-white text-lg">
+                              {lineup.team?.name}
+                            </h4>
+                            <p className="text-xs text-gray-400">
+                              Formation: {lineup.formation}
+                            </p>
                           </div>
                         </div>
 
                         {/* Starting XI */}
                         <div className="space-y-3 mb-6">
-                          <p className="text-sm font-semibold text-blue-400 uppercase tracking-wide">Starting XI</p>
+                          <p className="text-sm font-semibold text-blue-400 uppercase tracking-wide">
+                            Starting XI
+                          </p>
                           {lineup.startXI?.map((player, pidx) => (
                             <div
                               key={pidx}
                               className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-600/50 transition-colors"
                             >
-                              <span className="font-bold text-gray-400 w-6 text-center">{player.player?.number}</span>
+                              <span className="font-bold text-gray-400 w-6 text-center">
+                                {player.player?.number}
+                              </span>
                               <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-200">{player.player?.name}</p>
-                                <p className="text-xs text-gray-500">{player.player?.pos}</p>
+                                <p className="text-sm font-medium text-gray-200">
+                                  {player.player?.name}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {player.player?.pos}
+                                </p>
                               </div>
                             </div>
                           ))}
@@ -489,10 +576,16 @@ export default function MatchDetailsPage({ params }) {
                                 key={pidx}
                                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-600/50 transition-colors opacity-75"
                               >
-                                <span className="font-bold text-gray-500 w-6 text-center">{player.player?.number}</span>
+                                <span className="font-bold text-gray-500 w-6 text-center">
+                                  {player.player?.number}
+                                </span>
                                 <div className="flex-1">
-                                  <p className="text-sm font-medium text-gray-300">{player.player?.name}</p>
-                                  <p className="text-xs text-gray-600">{player.player?.pos}</p>
+                                  <p className="text-sm font-medium text-gray-300">
+                                    {player.player?.name}
+                                  </p>
+                                  <p className="text-xs text-gray-600">
+                                    {player.player?.pos}
+                                  </p>
                                 </div>
                               </div>
                             ))}
@@ -516,21 +609,37 @@ export default function MatchDetailsPage({ params }) {
                 transition={{ duration: 0.6 }}
                 viewport={{ once: true }}
               >
-                <Card className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
-                  <div className="flex items-center gap-2 mb-4">
-                    <MapPin className="h-5 w-5 text-blue-400" />
-                    <h4 className="font-bold text-white">Venue</h4>
-                  </div>
-                  <p className="text-sm font-semibold text-gray-200 mb-1">{fixture.venue.name}</p>
-                  <p className="text-xs text-gray-400 mb-3">{fixture.venue.city}</p>
-                  {fixture.attendance && (
-                    <div className="pt-3 border-t border-slate-700">
-                      <p className="text-xs text-gray-400">
-                        <span className="text-blue-400 font-semibold">{fixture.attendance.toLocaleString()}</span>{" "}
-                        Attendance
-                      </p>
+                <Card className="relative overflow-hidden p-6 border border-slate-700 shadow-xl rounded-2xl">
+                  {/* Background image */}
+                  <div className="absolute inset-0 bg-[url('/stadium.jpg')] bg-cover bg-center opacity-90 blur-xs"></div>
+                  {/* Dark overlay */}
+                  {/* <div className="absolute inset-0 bg-black/60"></div> */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-slate-900/70"></div>
+
+
+                  {/* Card Content */}
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-4">
+                      <MapPin className="h-5 w-5 text-blue-400" />
+                      <h4 className="font-bold text-white">Venue</h4>
                     </div>
-                  )}
+                    <p className="text-sm font-semibold text-gray-200 mb-1">
+                      {fixture.venue.name}
+                    </p>
+                    <p className="text-xs text-gray-400 mb-3">
+                      {fixture.venue.city}
+                    </p>
+                    {fixture.attendance && (
+                      <div className="pt-3 border-t border-slate-700">
+                        <p className="text-xs text-gray-400">
+                          <span className="text-blue-400 font-semibold">
+                            {fixture.attendance.toLocaleString()}
+                          </span>{" "}
+                          Attendance
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </Card>
               </motion.div>
             )}
@@ -547,9 +656,15 @@ export default function MatchDetailsPage({ params }) {
                   whileHover={{ scale: 1.05 }}
                   className="p-6 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl border border-blue-500 shadow-lg shadow-blue-600/50 cursor-pointer"
                 >
-                  <h4 className="text-lg font-bold text-white mb-2">Expert Predictions</h4>
-                  <p className="text-sm text-blue-100 mb-4">Get AI-powered predictions for this match</p>
-                  <div className="flex items-center gap-2 text-white font-semibold">View Predictions →</div>
+                  <h4 className="text-lg font-bold text-white mb-2">
+                    Expert Predictions
+                  </h4>
+                  <p className="text-sm text-blue-100 mb-4">
+                    Get AI-powered predictions for this match
+                  </p>
+                  <div className="flex items-center gap-2 text-white font-semibold">
+                    View Predictions →
+                  </div>
                 </motion.div>
               </Link>
             </motion.div>
@@ -559,5 +674,5 @@ export default function MatchDetailsPage({ params }) {
 
       <Footer />
     </div>
-  )
+  );
 }

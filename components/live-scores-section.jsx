@@ -36,7 +36,7 @@ const LiveMatchCard = memo(({ game, leagueStats }) => {
                 <img
                   src={game.leagueLogo || "/placeholder.svg"}
                   alt={game.league}
-                  className="h-9 md:h-11 w-9 md:w-11 rounded-md bg-black/50 object-contain shadow-xl shadow-blue-500/30"
+                  className="h-9 w-9 rounded-md bg-black/50 object-contain shadow-xl shadow-blue-500/30"
                 />
               </div>
             )}
@@ -81,7 +81,7 @@ const LiveMatchCard = memo(({ game, leagueStats }) => {
                   <img
                     src={game.homeTeamLogo || "/placeholder.svg"}
                     alt={game.homeTeam}
-                    className="w-8 h-8 md:w-12 md:h-12 rounded-full object-contain shadow-lg shadow-blue-500/20"
+                    className="w-8 h-8 md:w-10 md:h-10 rounded-full object-contain shadow-lg shadow-blue-500/20"
                   />
                 ) : (
                   <span className="text-lg md:text-xl">⚽</span>
@@ -113,7 +113,7 @@ const LiveMatchCard = memo(({ game, leagueStats }) => {
                   <img
                     src={game.awayTeamLogo || "/placeholder.svg"}
                     alt={game.awayTeam}
-                    className="w-8 h-8 md:w-12 md:h-12 rounded-full object-contain shadow-lg shadow-cyan-500/20"
+                    className="w-8 h-8 md:w-10 md:h-10 rounded-full object-contain shadow-lg shadow-cyan-500/20"
                   />
                 ) : (
                   <span className="text-lg md:text-xl">⚽</span>
@@ -219,7 +219,7 @@ const UpcomingMatchCard = memo(({ game }) => (
             <img
               src={game.homeTeamLogo || "/placeholder.svg"}
               alt={game.homeTeam}
-              className="w-8 h-8 md:w-12 md:h-12 rounded-full object-contain"
+              className="w-8 h-8 md:w-10 md:h-10 rounded-full object-contain"
             />
           ) : (
             <span className="text-lg">⚽</span>
@@ -234,7 +234,7 @@ const UpcomingMatchCard = memo(({ game }) => (
             <img
               src={game.awayTeamLogo || "/placeholder.svg"}
               alt={game.awayTeam}
-              className="w-8 h-8 md:w-12 md:h-12 rounded-full object-contain"
+              className="w-8 h-8 md:w-10 md:h-10 rounded-full object-contain"
             />
           ) : (
             <span className="text-lg">⚽</span>
