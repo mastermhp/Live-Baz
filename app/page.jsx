@@ -1,33 +1,24 @@
-"use client";
-import Header from "@/components/header";
-import Footer from "@/components/footer";
-import PredictionsSection from "@/components/predictions-section";
-import LiveScoresSection from "@/components/live-scores-section";
-import MatchCard from "@/components/match-card";
-import { demoMatches, demoArticles } from "@/lib/demo-data";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+"use client"
+import Header from "@/components/header"
+import Footer from "@/components/footer"
+import PredictionsSection from "@/components/predictions-section"
+import LiveScoresSection from "@/components/live-scores-section"
+import MatchCard from "@/components/match-card"
+import { demoMatches, demoArticles } from "@/lib/demo-data"
+import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { useLeagues } from "@/hooks/use-leagues"
 
-import { ArrowRight, TrendingUp, Newspaper, Sparkles } from "lucide-react";
-import Link from "next/link";
-import { motion } from "framer-motion";
-
-const leagues = [
-  { id: 1, name: "African Nations Championship", icon: "🏆" },
-  { id: 2, name: "Champions League", icon: "⭐" },
-  { id: 3, name: "UEFA Super Cup", icon: "🏅" },
-  { id: 4, name: "Europa League", icon: "🏆" },
-  { id: 5, name: "Europa Conference League", icon: "🏆" },
-  { id: 6, name: "English Premier League", icon: "🇬🇧" },
-  { id: 7, name: "LaLiga Spain", icon: "🇪🇸" },
-  { id: 8, name: "Serie A Italy", icon: "🇮🇹" },
-  { id: 9, name: "Bundesliga Germany", icon: "🇩🇪" },
-  { id: 10, name: "Ligue 1 France", icon: "🇫🇷" },
-];
+import { ArrowRight, TrendingUp, Newspaper, Sparkles } from "lucide-react"
+import Link from "next/link"
+import { motion } from "framer-motion"
 
 export default function HomePage() {
-  const liveMatches = demoMatches.filter((m) => m.status === "live");
-  const upcomingMatches = demoMatches.filter((m) => m.status === "upcoming");
+  const { leagues, loading: leaguesLoading } = useLeagues()
+  const liveMatches = demoMatches.filter((m) => m.status === "live")
+  const upcomingMatches = demoMatches.filter((m) => m.status === "upcoming")
+
+  const displayLeagues = leagues.length > 0 ? leagues : []
 
   return (
     <div className="min-h-screen bg-white">
@@ -51,38 +42,46 @@ export default function HomePage() {
                 <div className="flex items-center gap-1 mb-6">
                   <div className="h-1 w-2 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full" />
                   <div className="h-2 w-4 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full" />
-                  <h3 className="text-xl md:text-2xl font-bold text-foreground px-4">
-                    Top Leagues
-                  </h3>
+                  <h3 className="text-xl md:text-2xl font-bold text-foreground px-4">Top Leagues</h3>
                 </div>
 
                 <div className="space-y-1 border-1 border-blue-200/50 rounded-xl p-1 md:p-1 backdrop-blur-sm max-h-96 md:max-h-none overflow-y-auto">
-                  {leagues.map((league, index) => (
-                    <motion.button
-                      key={league.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.03 }}
-                      whileHover={{ x: 8, scale: 1.01 }}
-                      className="w-full text-left px-3 md:px-4 py-2 rounded-lg hover:bg-gradient-to-r hover:from-blue-500/20 hover:to-cyan-500/20 transition-all duration-300 ease-out text-xs text-foreground hover:text-blue-600 font-medium border border-transparent hover:border-blue-300/50 group"
-                    >
-                      <span className="mr-2 text-lg md:text-xl group-hover:scale-125 transition-transform duration-300 inline-block">
-                        {league.icon}
-                      </span>
-                      <span className="group-hover:font-semibold transition-all">
-                        {league.name}
-                      </span>
-                    </motion.button>
-                  ))}
+                  {leaguesLoading ? (
+                    <div className="text-center py-4 text-gray-500 text-sm">Loading leagues...</div>
+                  ) : displayLeagues.length > 0 ? (
+                    displayLeagues.map((league, index) => (
+                      <motion.button
+                        key={league.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.03 }}
+                        whileHover={{ x: 8, scale: 1.01 }}
+                        className="w-full text-left px-3 md:px-4 py-2 rounded-lg hover:bg-gradient-to-r hover:from-blue-500/20 hover:to-cyan-500/20 transition-all duration-300 ease-out text-xs text-foreground hover:text-blue-600 font-medium border border-transparent hover:border-blue-300/50 group flex items-center gap-2"
+                      >
+                        {league.flag && (
+                          <img
+                            src={league.flag || "/placeholder.svg"}
+                            alt={league.country}
+                            className="w-4 h-3 rounded object-cover"
+                          />
+                        )}
+                        <span className="group-hover:font-semibold transition-all truncate">{league.name}</span>
+                      </motion.button>
+                    ))
+                  ) : (
+                    <div className="text-center py-4 text-gray-500 text-sm">No leagues available</div>
+                  )}
                 </div>
 
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full mt-2 px-4 py-2 md:py-2 border-1 border-blue-500 text-blue-600 rounded-lg font-semibold hover:bg-blue-500 hover:text-white transition-all duration-300 ease-out text-sm md:text-base"
-                >
-                  All leagues
-                </motion.button>
+                <Link href="/leagues">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-full mt-2 px-4 py-2 md:py-2 border-1 border-blue-500 text-blue-600 rounded-lg font-semibold hover:bg-blue-500 hover:text-white transition-all duration-300 ease-out text-sm md:text-base"
+                  >
+                    All leagues
+                  </motion.button>
+                </Link>
               </motion.div>
             </Card>
           </aside>
@@ -91,7 +90,6 @@ export default function HomePage() {
           <div className="lg:col-span-3 space-y-6 md:space-y-8">
             <LiveScoresSection />
             {/* Live Matches Section */}
-          
 
             {/* Upcoming Matches Section */}
             <section className="mb-12 md:mb-16">
@@ -102,12 +100,8 @@ export default function HomePage() {
                     <div className="absolute inset-0 h-6 md:h-8 w-6 md:w-8 bg-blue-500 rounded-full blur-xl opacity-30" />
                   </div>
                   <div>
-                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">
-                      Upcoming Matches
-                    </h2>
-                    <p className="text-xs md:text-sm text-gray-600 mt-1">
-                      Get ahead with AI predictions
-                    </p>
+                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">Upcoming Matches</h2>
+                    <p className="text-xs md:text-sm text-gray-600 mt-1">Get ahead with AI predictions</p>
                   </div>
                 </div>
                 <Link href="/matches">
@@ -142,12 +136,8 @@ export default function HomePage() {
                     <div className="absolute inset-0 h-6 md:h-8 w-6 md:w-8 bg-blue-500 rounded-full blur-xl opacity-30" />
                   </div>
                   <div>
-                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">
-                      Expert Analysis
-                    </h2>
-                    <p className="text-xs md:text-sm text-gray-600 mt-1">
-                      Insights from professional analysts
-                    </p>
+                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">Expert Analysis</h2>
+                    <p className="text-xs md:text-sm text-gray-600 mt-1">Insights from professional analysts</p>
                   </div>
                 </div>
                 <Link href="/blog">
@@ -172,6 +162,7 @@ export default function HomePage() {
                           src={
                             article.image ||
                             "/placeholder.svg?height=300&width=400&query=football analysis" ||
+                            "/placeholder.svg" ||
                             "/placeholder.svg"
                           }
                           alt={article.title}
@@ -243,9 +234,8 @@ export default function HomePage() {
               </h2>
 
               <p className="text-sm md:text-lg lg:text-xl text-gray-400 mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
-                Create your free account to get personalized match
-                notifications, follow your favorite teams, and access exclusive
-                expert analysis and predictions.
+                Create your free account to get personalized match notifications, follow your favorite teams, and access
+                exclusive expert analysis and predictions.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center">
@@ -272,5 +262,5 @@ export default function HomePage() {
 
       <Footer />
     </div>
-  );
+  )
 }

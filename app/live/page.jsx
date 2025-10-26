@@ -6,8 +6,10 @@ import Header from "@/components/header"
 import { Card } from "@/components/ui/card"
 import { Flame, Radio, TrendingUp, Clock } from "lucide-react"
 import Footer from "@/components/footer"
-import { useLiveMatchesCache, useUpcomingMatchesCache } from "@/lib/swr-config"
+import { useLiveMatchesCache, useUpcomingMatchesCache, useFinishedMatchesCache } from "@/lib/swr-config"
 import { transformMatches } from "@/lib/transform-api-data"
+import { groupMatchesByLeague, calculateLeagueStats } from "@/lib/league-utils"
+import LiveMatchCardCompact from "@/components/live-match-card-compact"
 import Link from "next/link"
 
 const LiveMatchCardFull = memo(({ game }) => (
@@ -18,7 +20,7 @@ const LiveMatchCardFull = memo(({ game }) => (
     }}
     whileHover={{ scale: 1.02, x: 8 }}
     onClick={() => (window.location.href = `/match/${game.id}`)}
-    className="group relative overflow-hidden rounded-xl md:rounded-2xl backdrop-blur-md shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-500 hover:shadow-lg bg-gray-900/0 cursor-pointer"
+    className="group relative overflow-hidden rounded-xl md:rounded-2xl backdrop-blur-md shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-500 hover:shadow-lg cursor-pointer"
   >
     {/* Live Indicator */}
     <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-red-500 via-blue-600 to-transparent" />
@@ -147,94 +149,62 @@ const LiveMatchCardFull = memo(({ game }) => (
 
 LiveMatchCardFull.displayName = "LiveMatchCardFull"
 
-const UpcomingMatchCardFull = memo(({ game }) => (
-  <motion.div
-    variants={{
-      hidden: { opacity: 0, y: 20 },
-      visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-    }}
-    whileHover={{ scale: 1.01, x: 4 }}
-    onClick={() => (window.location.href = `/match/${game.id}`)}
-    className="group relative overflow-hidden border border-blue-500/30 hover:border-blue-500/70 transition-all duration-300 backdrop-blur-sm p-3 md:p-5 cursor-pointer rounded-lg md:rounded-xl"
-  >
-    {/* League Badge with flag */}
-    <span className="absolute -top-3 -left-3 md:-top-3 md:-left-4 z-20 px-2 py-0.5 md:pl-6 md:pt-3 text-[7px] md:text-[7px] bg-gradient-to-r from-blue-600 to-cyan-500 border border-blue-500/50 rounded-full font-semibold uppercase tracking-wider whitespace-nowrap text-white flex items-center gap-1">
-      {game.leagueLogo && (
-        <img
-          src={game.leagueLogo || "/placeholder.svg"}
-          alt={game.league}
-          className="h-3 md:h-3 w-3 md:w-3 rounded-full object-contain"
-        />
-      )}
-      <span>{game.league}</span>
-    </span>
+const UpcomingMatchCardCompact = memo(({ game }) => (
+  <Link href={`/match/${game.id}`}>
+    <motion.div
+      whileHover={{ x: 4 }}
+      className="group relative overflow-hidden rounded-lg backdrop-blur-md shadow-md hover:shadow-lg transition-all duration-300 mb-2 bg-gradient-to-r from-gray-900/40 to-gray-900/20 border border-blue-500/20 hover:border-blue-500/40 p-3 cursor-pointer"
+    >
+      <div className="flex flex-col gap-2">
+        {/* Time and League */}
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs font-semibold text-blue-600">{game.time}</span>
+          <div className="flex items-center gap-1 px-2 py-0.5 bg-blue-600/20 rounded-full border border-blue-500/30">
+            {game.leagueLogo && (
+              <img
+                src={game.leagueLogo || "/placeholder.svg"}
+                alt={game.league}
+                className="h-3 w-3 rounded-full object-contain"
+              />
+            )}
+            <span className="text-[8px] font-semibold text-blue-600 uppercase">{game.league}</span>
+          </div>
+        </div>
 
-    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-0">
-      {/* Time */}
-      <div className="flex items-center gap-2 md:gap-3 flex-1 w-full md:w-auto">
-        <span className="flex gap-2 mt-1 text-xs md:text-sm font-semibold text-blue-400">
-          <Clock className="h-3 md:h-4 w-3 md:w-4 text-blue-400" />
-          {game.time}
-        </span>
-      </div>
-
-      {/* Teams with Logos */}
-      <div className="flex-1 flex items-center justify-center gap-3 md:gap-6 px-0 md:px-6 w-full md:w-auto">
-        {/* Team 1 */}
-        <div className="flex items-center justify-end gap-2 flex-1 min-w-[100px] md:min-w-[120px]">
-          <p className="text-xs md:text-sm font-semibold text-gray-500 text-right whitespace-nowrap">{game.homeTeam}</p>
-          {game.homeTeamLogo ? (
+        {/* Teams */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
             <img
               src={game.homeTeamLogo || "/placeholder.svg"}
               alt={game.homeTeam}
-              className="w-8 h-8 md:w-12 md:h-12 rounded-full object-contain"
+              className="w-6 h-6 rounded-full object-contain flex-shrink-0"
             />
-          ) : (
-            <span className="text-lg">⚽</span>
-          )}
-        </div>
-
-        <span className="text-blue-500 font-bold text-xs md:text-base">vs</span>
-
-        {/* Team 2 */}
-        <div className="flex items-center justify-start gap-2 flex-1 min-w-[100px] md:min-w-[120px]">
-          {game.awayTeamLogo ? (
+            <span className="text-xs font-semibold text-gray-200 truncate">{game.homeTeam}</span>
+          </div>
+          <span className="text-xs text-gray-500 font-semibold">vs</span>
+          <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
+            <span className="text-xs font-semibold text-gray-100 truncate">{game.awayTeam}</span>
             <img
               src={game.awayTeamLogo || "/placeholder.svg"}
               alt={game.awayTeam}
-              className="w-8 h-8 md:w-12 md:h-12 rounded-full object-contain"
+              className="w-6 h-6 rounded-full object-contain flex-shrink-0"
             />
-          ) : (
-            <span className="text-lg">⚽</span>
-          )}
-          <p className="text-xs md:text-sm font-semibold text-gray-500 text-left whitespace-nowrap">{game.awayTeam}</p>
+          </div>
         </div>
       </div>
-
-      {/* Action */}
-      <div className="flex-1 flex justify-end w-full md:w-auto">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          className="px-3 md:px-4 py-1.5 text-xs md:text-sm font-semibold text-blue-400 border border-blue-500/50 rounded-2xl hover:bg-blue-500/10 transition-all duration-300"
-          onClick={(e) => {
-            e.stopPropagation()
-            window.location.href = `/prediction/${game.id}`
-          }}
-        >
-          Prediction
-        </motion.button>
-      </div>
-    </div>
-  </motion.div>
+    </motion.div>
+  </Link>
 ))
 
-UpcomingMatchCardFull.displayName = "UpcomingMatchCardFull"
+UpcomingMatchCardCompact.displayName = "UpcomingMatchCardCompact"
 
 export default function LivePage() {
   const [filter, setFilter] = useState("all")
+  const [rightPanelTab, setRightPanelTab] = useState("upcoming")
 
   const { matches: liveMatches, loading: liveLoading } = useLiveMatchesCache()
   const { matches: upcomingMatches, loading: upcomingLoading } = useUpcomingMatchesCache(1)
+  const { matches: finishedMatches, loading: finishedLoading } = useFinishedMatchesCache(1)
 
   const transformedLive = useMemo(
     () => (Array.isArray(liveMatches) ? transformMatches(liveMatches) : []),
@@ -244,7 +214,22 @@ export default function LivePage() {
     () => (Array.isArray(upcomingMatches) ? transformMatches(upcomingMatches) : []),
     [upcomingMatches],
   )
-  const loading = liveLoading || upcomingLoading
+  const transformedFinished = useMemo(
+    () => (Array.isArray(finishedMatches) ? transformMatches(finishedMatches) : []),
+    [finishedMatches],
+  )
+
+  const groupedLiveMatches = useMemo(() => groupMatchesByLeague(transformedLive), [transformedLive])
+  const leagueStats = useMemo(
+    () =>
+      groupedLiveMatches.map((group) => ({
+        ...group,
+        stats: calculateLeagueStats(group.matches),
+      })),
+    [groupedLiveMatches],
+  )
+
+  const loading = liveLoading || upcomingLoading || finishedLoading
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -254,14 +239,23 @@ export default function LivePage() {
     },
   }
 
+  const rightPanelMatches = rightPanelTab === "upcoming" ? transformedUpcoming : transformedFinished
+  const rightPanelLoading = rightPanelTab === "upcoming" ? upcomingLoading : finishedLoading
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50/30 to-green-50/30">
       <Header />
 
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 text-white">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-green-500/20 rounded-full blur-3xl animate-float-delayed" />
+      <div className="relative overflow-hidden  bg-gradient-to-br from-blue-600 via-blue-700 to-green-600 text-white">
+        <img
+          src="/livebg1.jpg"
+          alt="Abstract football texture"
+          className="absolute inset-0 w-full h-full object-cover opacity-90 mix-blend-screen pointer-events-none"
+        />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-black/30 rounded-full blur-3xl animate-float" />
+        <div className="absolute top-0 right-0 w-full h-full bg-black/50 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-black/30 rounded-full blur-3xl animate-float-delayed" />
 
         <div className="max-w-7xl mx-auto px-4 py-16 relative z-10">
           <div className="flex items-center gap-4 mb-6 animate-slide-up">
@@ -326,47 +320,23 @@ export default function LivePage() {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 py-12">
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="flex gap-2 md:gap-3 mb-8 md:mb-10 overflow-x-auto pb-4 scrollbar-hide"
-        >
-          {["Live games", "Today", "Tomorrow", "Calendar"].map((tab, idx) => (
-            <motion.button
-              key={tab}
-              initial={{ opacity: 0, x: -10 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.05 }}
-              className={`px-4 md:px-6 py-2 rounded-full font-semibold whitespace-nowrap transition-all duration-300 text-sm md:text-base ${
-                idx === 0
-                  ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-500/30"
-                  : "border border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white transition-all duration-300"
-              }`}
-              onClick={() => setFilter(tab)}
-            >
-              {tab}
-            </motion.button>
-          ))}
-        </motion.div>
-
-        {loading ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center py-12 md:py-16 px-4"
-          >
-            <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full bg-blue-500/10 mb-4 md:mb-6">
-              <Radio className="h-8 md:h-10 w-8 md:w-10 text-blue-500 animate-spin" />
-            </div>
-            <p className="text-gray-600">Loading live matches...</p>
-          </motion.div>
-        ) : transformedLive.length > 0 || transformedUpcoming.length > 0 ? (
-          <>
-            {/* Live Games Section */}
-            {transformedLive.length > 0 && (
-              <div className="mb-12 md:mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* LEFT COLUMN: Live Matches */}
+          <div className="lg:col-span-2">
+            {loading && liveLoading ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="text-center py-12 md:py-16 px-4"
+              >
+                <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full bg-blue-500/10 mb-4 md:mb-6">
+                  <Radio className="h-8 md:h-10 w-8 md:w-10 text-blue-500 animate-spin" />
+                </div>
+                <p className="text-gray-600">Loading live matches...</p>
+              </motion.div>
+            ) : leagueStats.length > 0 ? (
+              <div>
                 <motion.h3
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -377,73 +347,148 @@ export default function LivePage() {
                   Currently Live
                 </motion.h3>
 
-                <motion.div
-                  variants={containerVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  className="space-y-3 md:space-y-4"
-                >
-                  {transformedLive.map((game) => (
-                    <LiveMatchCardFull key={game.id} game={game} />
-                  ))}
-                </motion.div>
-              </div>
-            )}
+                {leagueStats.map((leagueGroup) => (
+                  <motion.div
+                    key={leagueGroup.leagueId}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="mb-8"
+                  >
+                    {/* League Header with Stats */}
+                    <div className="flex items-center justify-between mb-4 pb-3 border-b border-blue-500/30">
+                      <div className="flex items-center gap-3">
+                        {leagueGroup.leagueLogo && (
+                          <img
+                            src={leagueGroup.leagueLogo || "/placeholder.svg"}
+                            alt={leagueGroup.league}
+                            className="h-8 w-8 rounded-full object-contain"
+                          />
+                        )}
+                        <h4 className="text-lg font-bold text-gray-700">{leagueGroup.league}</h4>
+                      </div>
 
-            {/* Upcoming Games Section */}
-            {transformedUpcoming.length > 0 && (
-              <div>
-                <motion.h3
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="text-lg md:text-2xl font-bold text-gray-600 mb-4 md:mb-6 flex items-center gap-2"
-                >
-                  <Clock className="h-5 md:h-6 w-5 md:w-6 text-blue-500" />
-                  Upcoming Matches
-                </motion.h3>
+                      {/* League Statistics */}
+                      <div className="flex gap-2 md:gap-4 text-xs md:text-xs">
+                        <div className="text-center">
+                          <div className="font-bold text-blue-600">{leagueGroup.stats.bttsPercentage}%</div>
+                          <div className="text-gray-600">BTTS</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-bold text-green-600">{leagueGroup.stats.over25Percentage}%</div>
+                          <div className="text-gray-600">Over 2.5</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-bold text-purple-600">{leagueGroup.stats.over15Percentage}%</div>
+                          <div className="text-gray-600">Over 1.5</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-bold text-orange-600">{leagueGroup.stats.averageGoals}</div>
+                          <div className="text-gray-600">Avg Goals</div>
+                        </div>
+                      </div>
+                    </div>
 
-                <motion.div
-                  variants={containerVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  className="space-y-2 md:space-y-3"
-                >
-                  {transformedUpcoming.map((game) => (
-                    <UpcomingMatchCardFull key={game.id} game={game} />
-                  ))}
-                </motion.div>
+                    {/* Matches for this league */}
+                    <div className="space-y-2">
+                      {leagueGroup.matches.map((game) => (
+                        <LiveMatchCardCompact key={game.id} game={game} />
+                      ))}
+                    </div>
+                  </motion.div>
+                ))}
               </div>
-            )}
-          </>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center py-12 md:py-16 px-4"
-          >
-            <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full bg-blue-500/10 mb-4 md:mb-6">
-              <Clock className="h-8 md:h-10 w-8 md:w-10 text-blue-500" />
-            </div>
-            <h3 className="text-lg md:text-2xl font-bold text-foreground mb-2 md:mb-3">No Matches Right Now</h3>
-            <p className="text-sm md:text-base text-muted-foreground mb-6 md:mb-8 max-w-md mx-auto">
-              There are no live matches or scheduled matches for today. Check back later or explore our expert analysis
-              and predictions.
-            </p>
-            <Link href="/blog">
-              <motion.button
-                whileHover={{
-                  scale: 1.05,
-                  boxShadow: "0px 0px 20px rgba(59,130,246,0.3)",
-                }}
-                className="px-6 md:px-8 py-2 md:py-3 bg-blue-500 text-white font-semibold rounded-full hover:bg-blue-600 transition-all duration-300 text-sm md:text-base"
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="text-center py-12 md:py-16 px-4"
               >
-                Read Expert Analysis
+                <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-full bg-blue-500/10 mb-4 md:mb-6">
+                  <Clock className="h-8 md:h-10 w-8 md:w-10 text-blue-500" />
+                </div>
+                <h3 className="text-lg md:text-2xl font-bold text-foreground mb-2 md:mb-3">No Live Matches</h3>
+                <p className="text-sm md:text-base text-muted-foreground mb-6 md:mb-8 max-w-md mx-auto">
+                  There are no live matches right now. Check the upcoming matches on the right or explore our expert
+                  analysis.
+                </p>
+              </motion.div>
+            )}
+          </div>
+
+          {/* RIGHT COLUMN: Upcoming/Finished Matches with Toggle */}
+          <div className="lg:col-span-1">
+            <div className="flex gap-2 mb-6 bg-gray-100 p-1 rounded-lg">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setRightPanelTab("upcoming")}
+                className={`flex-1 px-4 py-2 rounded-md font-semibold transition-all duration-300 text-sm ${
+                  rightPanelTab === "upcoming"
+                    ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                Upcoming
               </motion.button>
-            </Link>
-          </motion.div>
-        )}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setRightPanelTab("finished")}
+                className={`flex-1 px-4 py-2 rounded-md font-semibold transition-all duration-300 text-sm ${
+                  rightPanelTab === "finished"
+                    ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                Finished
+              </motion.button>
+            </div>
+
+            {rightPanelLoading ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="text-center py-8 px-4"
+              >
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-500/10 mb-3">
+                  <Radio className="h-6 w-6 text-blue-500 animate-spin" />
+                </div>
+                <p className="text-sm text-gray-600">Loading matches...</p>
+              </motion.div>
+            ) : rightPanelMatches.length > 0 ? (
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                className="space-y-2 md:space-y-3"
+              >
+                {rightPanelMatches.map((game) => (
+                  <UpcomingMatchCardCompact key={game.id} game={game} />
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="text-center py-8 px-4"
+              >
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-500/10 mb-3">
+                  <Clock className="h-6 w-6 text-blue-500" />
+                </div>
+                <h4 className="text-sm font-bold text-foreground mb-1">No {rightPanelTab} matches</h4>
+                <p className="text-xs text-muted-foreground">
+                  {rightPanelTab === "upcoming"
+                    ? "Check back later for upcoming matches"
+                    : "No finished matches to display"}
+                </p>
+              </motion.div>
+            )}
+          </div>
+        </div>
       </main>
       <Footer />
     </div>
