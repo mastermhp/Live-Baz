@@ -96,7 +96,7 @@ const LiveMatchCard = ({ game }) => {
 
             <div className="col-span-2 md:col-span-2 flex flex-col justify-center items-center">
               <p className="text-xs text-gray-500 font-medium mb-2">Score</p>
-              <div className="flex flex-col items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
+              <div className="flex flex-col items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-sm border border-blue-200">
                 <span className="text-lg md:text-2xl font-bold text-blue-600">{game.homeScore}</span>
                 <span className="text-gray-400 font-bold">:</span>
                 <span className="text-lg md:text-2xl font-bold text-cyan-600">{game.awayScore}</span>
@@ -265,7 +265,7 @@ export default function LiveScoresSection() {
   const loading = liveLoading || upcomingLoading
 
   const categories = [
-    { id: "live", label: "Live games", icon: "🔴" },
+    { id: "live", label: "Live games", icon: "" },
     { id: "today", label: "Today" },
     { id: "tomorrow", label: "Tomorrow" },
     { id: "calendar", label: "Calendar" },

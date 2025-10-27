@@ -78,7 +78,7 @@ export default function Header() {
               href="/live"
               className="relative px-3 lg:px-4 py-2 text-xs lg:text-sm font-semibold text-gray-100 hover:text-blue-200 transition-all duration-300 flex items-center gap-2 group"
             >
-              <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse-subtle shadow-lg shadow-green-400/50" />
+              <span className="h-2 w-2 rounded-full bg-red-400 animate-pulse-subtle shadow-lg shadow-green-400/50" />
               Live
               <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-cyan-400 group-hover:w-3/4 transition-all duration-300" />
             </Link>
