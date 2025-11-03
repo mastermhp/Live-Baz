@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Eye, Users, Activity, BarChart3 } from "lucide-react"
+import { Eye, Users, Activity, TrendingUp, Clock } from "lucide-react"
 import {
   LineChart,
   Line,
@@ -13,26 +13,41 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts"
+import { useAdminAuth } from "@/lib/hooks/use-admin-auth"
+
+const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"]
 
 export default function AnalyticsDashboard() {
+  const { authenticated, loading: authLoading } = useAdminAuth()
   const [period, setPeriod] = useState("week")
   const [analytics, setAnalytics] = useState(null)
+  const [userActivity, setUserActivity] = useState(null)
   const [loading, setLoading] = useState(true)
   const [chartData, setChartData] = useState([])
 
   useEffect(() => {
-    fetchAnalytics()
-  }, [period])
+    if (authenticated) {
+      fetchAnalytics()
+      fetchUserActivity()
+      // Refresh every 30 seconds for real-time updates
+      const interval = setInterval(() => {
+        fetchAnalytics()
+        fetchUserActivity()
+      }, 30000)
+      return () => clearInterval(interval)
+    }
+  }, [period, authenticated])
 
   async function fetchAnalytics() {
     try {
-      setLoading(true)
       const res = await fetch(`/api/admin/analytics?period=${period}`)
       const data = await res.json()
       setAnalytics(data)
 
-      // Format data for charts
       const formattedData =
         data.analyticsData?.map((item) => ({
           date: new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
@@ -44,9 +59,23 @@ export default function AnalyticsDashboard() {
       setChartData(formattedData)
     } catch (error) {
       console.error("[v0] Error fetching analytics:", error)
+    }
+  }
+
+  async function fetchUserActivity() {
+    try {
+      const res = await fetch(`/api/analytics/user-activity?period=${period}`)
+      const data = await res.json()
+      setUserActivity(data)
+    } catch (error) {
+      console.error("[v0] Error fetching user activity:", error)
     } finally {
       setLoading(false)
     }
+  }
+
+  if (authLoading || loading) {
+    return <div className="text-center py-8">Loading analytics...</div>
   }
 
   const stats = [
@@ -58,8 +87,8 @@ export default function AnalyticsDashboard() {
       trend: "+12%",
     },
     {
-      label: "Unique Visitors",
-      value: analytics?.totalVisitors || 0,
+      label: "Active Users",
+      value: userActivity?.activeUsersCount || 0,
       icon: Users,
       color: "green",
       trend: "+8%",
@@ -72,11 +101,11 @@ export default function AnalyticsDashboard() {
       trend: "+5%",
     },
     {
-      label: "Top Articles",
-      value: analytics?.topArticles?.length || 0,
-      icon: BarChart3,
+      label: "Engagement Rate",
+      value: `${((userActivity?.activeUsersCount || 0) > 0 ? Math.round(((analytics?.totalPageViews || 0) / (userActivity?.activeUsersCount || 1)) * 10) / 10 : 0).toFixed(1)}%`,
+      icon: TrendingUp,
       color: "orange",
-      trend: "+3",
+      trend: "+3%",
     },
   ]
 
@@ -106,6 +135,13 @@ export default function AnalyticsDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon
+          const colorClass = {
+            blue: "from-blue-500 to-blue-600",
+            green: "from-green-500 to-green-600",
+            purple: "from-purple-500 to-purple-600",
+            orange: "from-orange-500 to-orange-600",
+          }[stat.color]
+
           return (
             <div
               key={index}
@@ -113,7 +149,7 @@ export default function AnalyticsDashboard() {
             >
               <div className="flex items-start justify-between mb-4">
                 <div
-                  className={`h-12 w-12 rounded-xl bg-gradient-to-br from-${stat.color}-500 to-${stat.color}-600 flex items-center justify-center`}
+                  className={`h-12 w-12 rounded-xl bg-gradient-to-br ${colorClass} flex items-center justify-center`}
                 >
                   <Icon className="h-6 w-6 text-white" />
                 </div>
@@ -161,6 +197,50 @@ export default function AnalyticsDashboard() {
           </ResponsiveContainer>
         </div>
 
+        {/* Activity Type Distribution */}
+        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+          <h2 className="text-lg font-bold mb-6 text-gray-900">Activity Distribution</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={userActivity?.activitiesByType || []}
+                dataKey="count"
+                nameKey="_id"
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                label
+              >
+                {(userActivity?.activitiesByType || []).map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Hourly Activity */}
+        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+          <h2 className="text-lg font-bold mb-6 text-gray-900">Hourly Activity</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={userActivity?.hourlyData || []}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="_id" stroke="#9ca3af" />
+              <YAxis stroke="#9ca3af" />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#1f2937",
+                  border: "none",
+                  borderRadius: "8px",
+                  color: "#fff",
+                }}
+              />
+              <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
         {/* Visitors Chart */}
         <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
           <h2 className="text-lg font-bold mb-6 text-gray-900">Unique Visitors</h2>
@@ -184,16 +264,14 @@ export default function AnalyticsDashboard() {
         </div>
       </div>
 
-      {/* Top Articles */}
+      {/* Top Performing Articles */}
       <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
         <h2 className="text-lg font-bold mb-6 text-gray-900">Top Performing Articles</h2>
-        {loading ? (
-          <div className="text-center py-8">Loading...</div>
-        ) : analytics?.topArticles?.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">No data available</div>
+        {analytics?.topArticles?.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">No articles yet</div>
         ) : (
           <div className="space-y-3">
-            {analytics.topArticles.map((article, index) => (
+            {analytics?.topArticles?.map((article, index) => (
               <div
                 key={article._id}
                 className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
@@ -210,6 +288,40 @@ export default function AnalyticsDashboard() {
                 <div className="text-right">
                   <p className="font-bold text-gray-900">{article.views || 0}</p>
                   <p className="text-xs text-gray-500">views</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Top Active Users */}
+      <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <h2 className="text-lg font-bold mb-6 text-gray-900">Top Active Users</h2>
+        {userActivity?.topUsers?.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">No user activity yet</div>
+        ) : (
+          <div className="space-y-3">
+            {userActivity?.topUsers?.map((user, index) => (
+              <div
+                key={user.userId}
+                className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
+                    {user.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">{user.name}</p>
+                    <p className="text-xs text-gray-500">{user.email}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-gray-900">{user.activityCount}</p>
+                  <p className="text-xs text-gray-500 flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    Last active today
+                  </p>
                 </div>
               </div>
             ))}
@@ -241,7 +353,7 @@ export default function AnalyticsDashboard() {
           </div>
           <div className="flex items-center justify-between p-4 bg-white rounded-xl">
             <div>
-              <p className="text-sm text-gray-600">WebSocket</p>
+              <p className="text-sm text-gray-600">Real-time Updates</p>
               <p className="font-bold text-green-600">Active</p>
             </div>
             <div className="h-12 w-12 rounded-xl bg-green-100 flex items-center justify-center">
