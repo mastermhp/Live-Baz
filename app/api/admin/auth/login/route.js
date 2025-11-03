@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server"
 import { authenticateAdmin } from "@/lib/auth/admin-auth.js"
 
 export async function POST(req) {
@@ -6,14 +7,12 @@ export async function POST(req) {
     const { email, password } = body
 
     if (!email || !password) {
-      return Response.json({ error: "Email and password are required" }, { status: 400 })
+      return NextResponse.json({ error: "Email and password are required" }, { status: 400 })
     }
 
     const admin = await authenticateAdmin(email, password)
 
-    // In production, create a JWT token here
-    // For now, returning admin data
-    const response = Response.json(
+    const response = NextResponse.json(
       {
         message: "Login successful",
         admin,
@@ -32,6 +31,6 @@ export async function POST(req) {
     return response
   } catch (error) {
     console.error("[v0] Error in login:", error)
-    return Response.json({ error: error.message }, { status: 401 })
+    return NextResponse.json({ error: error.message }, { status: 401 })
   }
 }

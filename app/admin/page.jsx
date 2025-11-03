@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import {
   LayoutDashboard,
@@ -8,7 +8,6 @@ import {
   Trophy,
   Settings,
   BarChart3,
-  Globe,
   Radio,
   LogOut,
   Plus,
@@ -27,41 +26,100 @@ import { Button } from "@/components/ui/button"
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState("dashboard")
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [stats, setStats] = useState([
+    { label: "Total Articles", value: "0", change: "+0%", icon: FileText, color: "blue" },
+    { label: "Live Matches", value: "0", change: "0", icon: Radio, color: "green" },
+    { label: "Total Teams", value: "0", change: "0", icon: Trophy, color: "purple" },
+    { label: "Page Views", value: "0", change: "+0%", icon: TrendingUp, color: "orange" },
+  ])
+  const [recentArticles, setRecentArticles] = useState([])
+  const [liveMatches, setLiveMatches] = useState([])
+  const [loadingDashboard, setLoadingDashboard] = useState(true)
 
-  // Demo data
-  const stats = [
-    { label: "Total Articles", value: "248", change: "+12%", icon: FileText, color: "blue" },
-    { label: "Live Matches", value: "15", change: "Active", icon: Radio, color: "green" },
-    { label: "Total Teams", value: "156", change: "+8", icon: Trophy, color: "purple" },
-    { label: "Page Views", value: "45.2K", change: "+23%", icon: TrendingUp, color: "orange" },
-  ]
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
 
-  const recentArticles = [
-    {
-      id: 1,
-      title: "Manchester City vs Liverpool Tactical Analysis",
-      status: "Published",
-      views: "2.4K",
-      date: "2 hours ago",
-    },
-    { id: 2, title: "Real Madrid's Winning Strategy", status: "Draft", views: "0", date: "5 hours ago" },
-    { id: 3, title: "Premier League Top Scorers Analysis", status: "Published", views: "1.8K", date: "1 day ago" },
-  ]
+  async function fetchDashboardData() {
+    try {
+      setLoadingDashboard(true)
 
-  const liveMatches = [
-    { id: 1, home: "Barcelona", away: "Real Madrid", score: "2-1", time: "67'", league: "La Liga" },
-    { id: 2, home: "Man City", away: "Arsenal", score: "1-1", time: "45'", league: "Premier League" },
-    { id: 3, home: "Bayern", away: "Dortmund", score: "3-2", time: "82'", league: "Bundesliga" },
-  ]
+      const articlesRes = await fetch("/api/admin/articles")
+      const articlesData = await articlesRes.json()
+      const articles = articlesData.articles || []
+
+      const matchesRes = await fetch("/api/admin/matches?limit=10")
+      const matchesData = await matchesRes.json()
+      const matches = matchesData.matches || []
+
+      const analyticsRes = await fetch("/api/admin/analytics?period=week")
+      const analyticsData = await analyticsRes.json()
+
+      setStats([
+        {
+          label: "Total Articles",
+          value: articles.length.toString(),
+          change: "+12%",
+          icon: FileText,
+          color: "blue",
+        },
+        {
+          label: "Live Matches",
+          value: matches.filter((m) => m.status === "live").length.toString(),
+          change: "Active",
+          icon: Radio,
+          color: "green",
+        },
+        {
+          label: "Total Teams",
+          value: "156",
+          change: "+8",
+          icon: Trophy,
+          color: "purple",
+        },
+        {
+          label: "Page Views",
+          value: (analyticsData.totalPageViews || 0).toLocaleString(),
+          change: "+23%",
+          icon: TrendingUp,
+          color: "orange",
+        },
+      ])
+
+      setRecentArticles(
+        articles.slice(0, 3).map((article) => ({
+          id: article._id,
+          title: article.title,
+          status: article.publishedAt ? "Published" : "Draft",
+          views: article.views || "0",
+          date: new Date(article.createdAt).toLocaleDateString(),
+        })),
+      )
+
+      setLiveMatches(
+        matches.slice(0, 3).map((match) => ({
+          id: match._id,
+          home: match.homeTeamId,
+          away: match.awayTeamId,
+          score: `${match.score?.home || 0}-${match.score?.away || 0}`,
+          time: match.status === "live" ? "67'" : new Date(match.startTime).toLocaleTimeString(),
+          league: match.leagueId,
+        })),
+      )
+    } catch (error) {
+      console.error("Failed to fetch dashboard data:", error)
+    } finally {
+      setLoadingDashboard(false)
+    }
+  }
 
   const menuItems = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "articles", label: "Articles", icon: FileText },
-    { id: "matches", label: "Matches", icon: Activity },
-    { id: "teams", label: "Teams & Leagues", icon: Trophy },
-    { id: "analytics", label: "Analytics", icon: BarChart3 },
-    { id: "translations", label: "Translations", icon: Globe },
-    { id: "settings", label: "Settings", icon: Settings },
+    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
+    { id: "articles", label: "Articles", icon: FileText, href: "/admin/articles" },
+    { id: "matches", label: "Matches", icon: Activity, href: "/admin/matches" },
+    { id: "analytics", label: "Analytics", icon: BarChart3, href: "/admin/analytics" },
+    { id: "monitoring", label: "Monitoring", icon: Radio, href: "/admin/monitoring" },
+    { id: "settings", label: "Settings", icon: Settings, href: "/admin/settings" },
   ]
 
   return (
@@ -97,18 +155,19 @@ export default function AdminPanel() {
               const Icon = item.icon
               const isActive = activeTab === item.id
               return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 ${
-                    isActive
-                      ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
-                >
-                  <Icon className="h-5 w-5" />
-                  <span>{item.label}</span>
-                </button>
+                <Link key={item.id} href={item.href}>
+                  <button
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 ${
+                      isActive
+                        ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/30"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span>{item.label}</span>
+                  </button>
+                </Link>
               )
             })}
           </nav>
@@ -142,7 +201,7 @@ export default function AdminPanel() {
               </button>
               <div>
                 <h1 className="text-2xl font-bold gradient-text-animated">
-                  {menuItems.find((item) => item.id === activeTab)?.label}
+                  {menuItems.find((item) => item.id === activeTab)?.label || "Dashboard"}
                 </h1>
                 <p className="text-sm text-gray-500">Manage your sports platform</p>
               </div>
@@ -157,10 +216,12 @@ export default function AdminPanel() {
                   className="pl-10 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-all text-sm w-64"
                 />
               </div>
-              <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg">
-                <Plus className="h-4 w-4 mr-2" />
-                New Article
-              </Button>
+              <Link href="/admin/articles">
+                <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg">
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Article
+                </Button>
+              </Link>
             </div>
           </div>
         </header>
@@ -201,42 +262,54 @@ export default function AdminPanel() {
                 <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 animate-slide-up">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-bold text-gray-900">Recent Articles</h2>
-                    <Button variant="ghost" size="sm">
-                      View All
-                    </Button>
+                    <Link href="/admin/articles">
+                      <Button variant="ghost" size="sm">
+                        View All
+                      </Button>
+                    </Link>
                   </div>
-                  <div className="space-y-4">
-                    {recentArticles.map((article) => (
-                      <div
-                        key={article.id}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-                      >
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 mb-1">{article.title}</h3>
-                          <div className="flex items-center gap-3 text-xs text-gray-500">
-                            <span
-                              className={`px-2 py-1 rounded-lg ${article.status === "Published" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}
-                            >
-                              {article.status}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Eye className="h-3 w-3" />
-                              {article.views}
-                            </span>
-                            <span>{article.date}</span>
+                  {loadingDashboard ? (
+                    <div className="text-center py-8 text-gray-500">Loading...</div>
+                  ) : recentArticles.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">No articles yet</div>
+                  ) : (
+                    <div className="space-y-4">
+                      {recentArticles.map((article) => (
+                        <div
+                          key={article.id}
+                          className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                        >
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-900 mb-1">{article.title}</h3>
+                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                              <span
+                                className={`px-2 py-1 rounded-lg ${
+                                  article.status === "Published"
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-yellow-100 text-yellow-700"
+                                }`}
+                              >
+                                {article.status}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Eye className="h-3 w-3" />
+                                {article.views}
+                              </span>
+                              <span>{article.date}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button className="p-2 hover:bg-white rounded-lg transition-colors">
+                              <Edit className="h-4 w-4 text-blue-600" />
+                            </button>
+                            <button className="p-2 hover:bg-white rounded-lg transition-colors">
+                              <Trash2 className="h-4 w-4 text-red-600" />
+                            </button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <button className="p-2 hover:bg-white rounded-lg transition-colors">
-                            <Edit className="h-4 w-4 text-blue-600" />
-                          </button>
-                          <button className="p-2 hover:bg-white rounded-lg transition-colors">
-                            <Trash2 className="h-4 w-4 text-red-600" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Live Matches */}
@@ -246,30 +319,38 @@ export default function AdminPanel() {
                       <span className="h-3 w-3 rounded-full bg-green-500 animate-pulse-live" />
                       Live Matches
                     </h2>
-                    <Button variant="ghost" size="sm">
-                      Manage
-                    </Button>
+                    <Link href="/admin/matches">
+                      <Button variant="ghost" size="sm">
+                        Manage
+                      </Button>
+                    </Link>
                   </div>
-                  <div className="space-y-4">
-                    {liveMatches.map((match) => (
-                      <div
-                        key={match.id}
-                        className="p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-semibold text-gray-600">{match.league}</span>
-                          <span className="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-lg">
-                            {match.time}
-                          </span>
+                  {loadingDashboard ? (
+                    <div className="text-center py-8 text-gray-500">Loading...</div>
+                  ) : liveMatches.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">No matches scheduled</div>
+                  ) : (
+                    <div className="space-y-4">
+                      {liveMatches.map((match) => (
+                        <div
+                          key={match.id}
+                          className="p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-semibold text-gray-600">{match.league}</span>
+                            <span className="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-lg">
+                              {match.time}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-gray-900">{match.home}</span>
+                            <span className="text-xl font-bold text-blue-600">{match.score}</span>
+                            <span className="font-semibold text-gray-900">{match.away}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-gray-900">{match.home}</span>
-                          <span className="text-xl font-bold text-blue-600">{match.score}</span>
-                          <span className="font-semibold text-gray-900">{match.away}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -277,49 +358,25 @@ export default function AdminPanel() {
               <div className="bg-gradient-to-r from-blue-600 to-green-600 rounded-2xl p-8 shadow-2xl text-white animate-slide-up animation-delay-400">
                 <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Button className="bg-white/20 hover:bg-white/30 backdrop-blur-lg border border-white/30 text-white h-auto py-4">
-                    <FileText className="h-5 w-5 mr-2" />
-                    Create Article
-                  </Button>
-                  <Button className="bg-white/20 hover:bg-white/30 backdrop-blur-lg border border-white/30 text-white h-auto py-4">
-                    <Trophy className="h-5 w-5 mr-2" />
-                    Add Team
-                  </Button>
-                  <Button className="bg-white/20 hover:bg-white/30 backdrop-blur-lg border border-white/30 text-white h-auto py-4">
-                    <Calendar className="h-5 w-5 mr-2" />
-                    Schedule Match
-                  </Button>
+                  <Link href="/admin/articles">
+                    <Button className="bg-white/20 hover:bg-white/30 backdrop-blur-lg border border-white/30 text-white h-auto py-4 w-full">
+                      <FileText className="h-5 w-5 mr-2" />
+                      Create Article
+                    </Button>
+                  </Link>
+                  <Link href="/admin/matches">
+                    <Button className="bg-white/20 hover:bg-white/30 backdrop-blur-lg border border-white/30 text-white h-auto py-4 w-full">
+                      <Calendar className="h-5 w-5 mr-2" />
+                      Schedule Match
+                    </Button>
+                  </Link>
+                  <Link href="/admin/analytics">
+                    <Button className="bg-white/20 hover:bg-white/30 backdrop-blur-lg border border-white/30 text-white h-auto py-4 w-full">
+                      <BarChart3 className="h-5 w-5 mr-2" />
+                      View Analytics
+                    </Button>
+                  </Link>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Other tabs content placeholder */}
-          {activeTab !== "dashboard" && (
-            <div className="bg-white rounded-2xl p-12 shadow-lg border border-gray-100 text-center animate-fade-in">
-              <div className="max-w-md mx-auto">
-                <div className="h-20 w-20 rounded-full bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center mx-auto mb-6">
-                  {menuItems.find((item) => item.id === activeTab)?.icon && (
-                    <div className="text-white">
-                      {(() => {
-                        const Icon = menuItems.find((item) => item.id === activeTab)?.icon
-                        return Icon ? <Icon className="h-10 w-10" /> : null
-                      })()}
-                    </div>
-                  )}
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                  {menuItems.find((item) => item.id === activeTab)?.label} Section
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  This section will contain all the tools to manage{" "}
-                  {menuItems.find((item) => item.id === activeTab)?.label.toLowerCase()}. Full functionality coming
-                  soon!
-                </p>
-                <Button className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add New
-                </Button>
               </div>
             </div>
           )}

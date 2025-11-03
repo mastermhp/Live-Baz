@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { AlertCircle, CheckCircle, AlertTriangle, Activity, Zap } from "lucide-react"
-import { useLiveMatches } from "@/lib/hooks/use-live-updates.js"
+import { useLiveMatches } from "@/hooks/use-live-updates.js"
 
 export default function MonitoringPage() {
   const { liveMatches, connected } = useLiveMatches()
