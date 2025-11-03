@@ -5,7 +5,7 @@ import { AlertCircle, CheckCircle, AlertTriangle, Activity, Zap } from "lucide-r
 import { useLiveMatches } from "@/hooks/use-live-updates.js"
 
 export default function MonitoringPage() {
-  const { liveMatches, connected } = useLiveMatches()
+  const { matches, connected } = useLiveMatches()
   const [liveEvents, setLiveEvents] = useState([])
   const [systemStatus, setSystemStatus] = useState({
     database: "operational",
@@ -15,17 +15,22 @@ export default function MonitoringPage() {
   })
 
   useEffect(() => {
-    if (liveMatches.length > 0) {
-      const newEvents = liveMatches.slice(0, 5).map((match) => ({
-        id: match.matchId,
-        type: "match-update",
-        message: `Match updated: ${match.matchId}`,
-        timestamp: match.timestamp,
-        severity: "info",
-      }))
+    if (matches && Array.isArray(matches) && matches.length > 0) {
+      const newEvents = matches.slice(0, 5).map((match, index) => {
+        const homeTeam = match.homeTeam?.name || match.homeTeamId || "Team A"
+        const awayTeam = match.awayTeam?.name || match.awayTeamId || "Team B"
+
+        return {
+          id: match.matchId || match._id || match.apiId || `match-${index}-${match.startTime}`,
+          type: "match-update",
+          message: `Match updated: ${homeTeam} vs ${awayTeam}`,
+          timestamp: match.timestamp || match.startTime || new Date().toISOString(),
+          severity: "info",
+        }
+      })
       setLiveEvents(newEvents)
     }
-  }, [liveMatches])
+  }, [matches])
 
   useEffect(() => {
     setSystemStatus((prev) => ({
@@ -39,6 +44,7 @@ export default function MonitoringPage() {
     disconnected: "text-red-600 bg-red-100",
     warning: "text-yellow-600 bg-yellow-100",
     error: "text-red-600 bg-red-100",
+    connected: "text-green-600 bg-green-100",
   }
 
   const getSeverityIcon = (severity) => {
@@ -62,7 +68,7 @@ export default function MonitoringPage() {
           <div key={key} className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-gray-900 capitalize">{key}</h3>
-              <Activity className={`h-5 w-5 ${statusColors[status]?.split(" ")[0]}`} />
+              <Activity className={`h-5 w-5 ${statusColors[status]?.split(" ")[0] || "text-gray-400"}`} />
             </div>
             <div className={`inline-block px-3 py-1 rounded-lg text-sm font-semibold ${statusColors[status]}`}>
               {status}

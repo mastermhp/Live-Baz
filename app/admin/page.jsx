@@ -200,9 +200,7 @@ export default function AdminPanel() {
                 <Menu className="h-6 w-6" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold gradient-text-animated">
-                  {menuItems.find((item) => item.id === activeTab)?.label || "Dashboard"}
-                </h1>
+                <h1 className="text-2xl font-bold gradient-text-animated">Dashboard</h1>
                 <p className="text-sm text-gray-500">Manage your sports platform</p>
               </div>
             </div>
@@ -228,158 +226,156 @@ export default function AdminPanel() {
 
         {/* Dashboard Content */}
         <main className="p-6">
-          {activeTab === "dashboard" && (
-            <div className="space-y-6 animate-fade-in">
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {stats.map((stat, index) => {
-                  const Icon = stat.icon
-                  return (
-                    <div
-                      key={index}
-                      className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-slide-up stagger-item"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div
-                          className={`h-12 w-12 rounded-xl bg-gradient-to-br from-${stat.color}-500 to-${stat.color}-600 flex items-center justify-center shadow-lg`}
-                        >
-                          <Icon className="h-6 w-6 text-white" />
-                        </div>
-                        <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-lg">
-                          {stat.change}
-                        </span>
+          <div className="space-y-6 animate-fade-in">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {stats.map((stat, index) => {
+                const Icon = stat.icon
+                return (
+                  <div
+                    key={index}
+                    className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-slide-up stagger-item"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div
+                        className={`h-12 w-12 rounded-xl bg-gradient-to-br from-${stat.color}-500 to-${stat.color}-600 flex items-center justify-center shadow-lg`}
+                      >
+                        <Icon className="h-6 w-6 text-white" />
                       </div>
-                      <h3 className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</h3>
-                      <p className="text-sm text-gray-600">{stat.label}</p>
+                      <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-lg">
+                        {stat.change}
+                      </span>
                     </div>
-                  )
-                })}
-              </div>
-
-              {/* Two Column Layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Recent Articles */}
-                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 animate-slide-up">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">Recent Articles</h2>
-                    <Link href="/admin/articles">
-                      <Button variant="ghost" size="sm">
-                        View All
-                      </Button>
-                    </Link>
+                    <h3 className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</h3>
+                    <p className="text-sm text-gray-600">{stat.label}</p>
                   </div>
-                  {loadingDashboard ? (
-                    <div className="text-center py-8 text-gray-500">Loading...</div>
-                  ) : recentArticles.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">No articles yet</div>
-                  ) : (
-                    <div className="space-y-4">
-                      {recentArticles.map((article) => (
-                        <div
-                          key={article.id}
-                          className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-                        >
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900 mb-1">{article.title}</h3>
-                            <div className="flex items-center gap-3 text-xs text-gray-500">
-                              <span
-                                className={`px-2 py-1 rounded-lg ${
-                                  article.status === "Published"
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-yellow-100 text-yellow-700"
-                                }`}
-                              >
-                                {article.status}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Eye className="h-3 w-3" />
-                                {article.views}
-                              </span>
-                              <span>{article.date}</span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button className="p-2 hover:bg-white rounded-lg transition-colors">
-                              <Edit className="h-4 w-4 text-blue-600" />
-                            </button>
-                            <button className="p-2 hover:bg-white rounded-lg transition-colors">
-                              <Trash2 className="h-4 w-4 text-red-600" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                )
+              })}
+            </div>
 
-                {/* Live Matches */}
-                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 animate-slide-up animation-delay-200">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                      <span className="h-3 w-3 rounded-full bg-green-500 animate-pulse-live" />
-                      Live Matches
-                    </h2>
-                    <Link href="/admin/matches">
-                      <Button variant="ghost" size="sm">
-                        Manage
-                      </Button>
-                    </Link>
-                  </div>
-                  {loadingDashboard ? (
-                    <div className="text-center py-8 text-gray-500">Loading...</div>
-                  ) : liveMatches.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">No matches scheduled</div>
-                  ) : (
-                    <div className="space-y-4">
-                      {liveMatches.map((match) => (
-                        <div
-                          key={match.id}
-                          className="p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200"
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-semibold text-gray-600">{match.league}</span>
-                            <span className="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-lg">
-                              {match.time}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold text-gray-900">{match.home}</span>
-                            <span className="text-xl font-bold text-blue-600">{match.score}</span>
-                            <span className="font-semibold text-gray-900">{match.away}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="bg-gradient-to-r from-blue-600 to-green-600 rounded-2xl p-8 shadow-2xl text-white animate-slide-up animation-delay-400">
-                <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Recent Articles */}
+              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 animate-slide-up">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-gray-900">Recent Articles</h2>
                   <Link href="/admin/articles">
-                    <Button className="bg-white/20 hover:bg-white/30 backdrop-blur-lg border border-white/30 text-white h-auto py-4 w-full">
-                      <FileText className="h-5 w-5 mr-2" />
-                      Create Article
-                    </Button>
-                  </Link>
-                  <Link href="/admin/matches">
-                    <Button className="bg-white/20 hover:bg-white/30 backdrop-blur-lg border border-white/30 text-white h-auto py-4 w-full">
-                      <Calendar className="h-5 w-5 mr-2" />
-                      Schedule Match
-                    </Button>
-                  </Link>
-                  <Link href="/admin/analytics">
-                    <Button className="bg-white/20 hover:bg-white/30 backdrop-blur-lg border border-white/30 text-white h-auto py-4 w-full">
-                      <BarChart3 className="h-5 w-5 mr-2" />
-                      View Analytics
+                    <Button variant="ghost" size="sm">
+                      View All
                     </Button>
                   </Link>
                 </div>
+                {loadingDashboard ? (
+                  <div className="text-center py-8 text-gray-500">Loading...</div>
+                ) : recentArticles.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">No articles yet</div>
+                ) : (
+                  <div className="space-y-4">
+                    {recentArticles.map((article) => (
+                      <div
+                        key={article.id}
+                        className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                      >
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900 mb-1">{article.title}</h3>
+                          <div className="flex items-center gap-3 text-xs text-gray-500">
+                            <span
+                              className={`px-2 py-1 rounded-lg ${
+                                article.status === "Published"
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-yellow-100 text-yellow-700"
+                              }`}
+                            >
+                              {article.status}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Eye className="h-3 w-3" />
+                              {article.views}
+                            </span>
+                            <span>{article.date}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button className="p-2 hover:bg-white rounded-lg transition-colors">
+                            <Edit className="h-4 w-4 text-blue-600" />
+                          </button>
+                          <button className="p-2 hover:bg-white rounded-lg transition-colors">
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Live Matches */}
+              <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 animate-slide-up animation-delay-200">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <span className="h-3 w-3 rounded-full bg-green-500 animate-pulse-live" />
+                    Live Matches
+                  </h2>
+                  <Link href="/admin/matches">
+                    <Button variant="ghost" size="sm">
+                      Manage
+                    </Button>
+                  </Link>
+                </div>
+                {loadingDashboard ? (
+                  <div className="text-center py-8 text-gray-500">Loading...</div>
+                ) : liveMatches.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">No matches scheduled</div>
+                ) : (
+                  <div className="space-y-4">
+                    {liveMatches.map((match) => (
+                      <div
+                        key={match.id}
+                        className="p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-semibold text-gray-600">{match.league}</span>
+                          <span className="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-lg">
+                            {match.time}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-gray-900">{match.home}</span>
+                          <span className="text-xl font-bold text-blue-600">{match.score}</span>
+                          <span className="font-semibold text-gray-900">{match.away}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-          )}
+
+            {/* Quick Actions */}
+            <div className="bg-gradient-to-r from-blue-600 to-green-600 rounded-2xl p-8 shadow-2xl text-white animate-slide-up animation-delay-400">
+              <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Link href="/admin/articles">
+                  <Button className="bg-white/20 hover:bg-white/30 backdrop-blur-lg border border-white/30 text-white h-auto py-4 w-full">
+                    <FileText className="h-5 w-5 mr-2" />
+                    Create Article
+                  </Button>
+                </Link>
+                <Link href="/admin/matches">
+                  <Button className="bg-white/20 hover:bg-white/30 backdrop-blur-lg border border-white/30 text-white h-auto py-4 w-full">
+                    <Calendar className="h-5 w-5 mr-2" />
+                    Schedule Match
+                  </Button>
+                </Link>
+                <Link href="/admin/analytics">
+                  <Button className="bg-white/20 hover:bg-white/30 backdrop-blur-lg border border-white/30 text-white h-auto py-4 w-full">
+                    <BarChart3 className="h-5 w-5 mr-2" />
+                    View Analytics
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
         </main>
       </div>
     </div>

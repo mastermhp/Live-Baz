@@ -1,24 +1,32 @@
-"use client";
-import Header from "@/components/header";
-import Footer from "@/components/footer";
-import PredictionsSection from "@/components/predictions-section";
-import LiveScoresSection from "@/components/live-scores-section";
-import MatchCard from "@/components/match-card";
-import { demoMatches, demoArticles } from "@/lib/demo-data";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useLeagues } from "@/hooks/use-leagues";
+"use client"
+import Header from "@/components/header"
+import Footer from "@/components/footer"
+import PredictionsSection from "@/components/predictions-section"
+import LiveScoresSection from "@/components/live-scores-section"
+import { demoMatches } from "@/lib/demo-data"
+import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { useLeagues } from "@/hooks/use-leagues"
+import useSWR from "swr"
 
-import { ArrowRight, TrendingUp, Newspaper, Sparkles } from "lucide-react";
-import Link from "next/link";
-import { motion } from "framer-motion";
+import { ArrowRight, Newspaper, Sparkles } from "lucide-react"
+import Link from "next/link"
+import { motion } from "framer-motion"
 
 export default function HomePage() {
-  const { leagues, loading: leaguesLoading } = useLeagues();
-  const liveMatches = demoMatches.filter((m) => m.status === "live");
-  const upcomingMatches = demoMatches.filter((m) => m.status === "upcoming");
+  const { leagues, loading: leaguesLoading } = useLeagues()
+  const liveMatches = demoMatches.filter((m) => m.status === "live")
+  const upcomingMatches = demoMatches.filter((m) => m.status === "upcoming")
 
-  const displayLeagues = leagues.length > 0 ? leagues : [];
+  const displayLeagues = leagues.length > 0 ? leagues : []
+
+  const fetcher = (url) => fetch(url).then((r) => r.json())
+  const { data: articlesData } = useSWR("/api/admin/articles?limit=3", fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  })
+
+  const articles = articlesData?.articles || demoMatches.slice(0, 3)
 
   return (
     <div className="min-h-screen bg-white">
@@ -42,16 +50,12 @@ export default function HomePage() {
                 <div className="flex items-center gap-1 mb-6">
                   <div className="h-1 w-2 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full" />
                   <div className="h-2 w-4 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full" />
-                  <h3 className="text-xl md:text-2xl font-bold text-foreground px-4">
-                    Top Leagues
-                  </h3>
+                  <h3 className="text-xl md:text-2xl font-bold text-foreground px-4">Top Leagues</h3>
                 </div>
 
                 <div className="space-y-1 border-1 border-blue-200/50 rounded-xl p-1 md:p-1 backdrop-blur-sm max-h-96 md:max-h-none overflow-y-auto">
                   {leaguesLoading ? (
-                    <div className="text-center py-4 text-gray-500 text-sm">
-                      Loading leagues...
-                    </div>
+                    <div className="text-center py-4 text-gray-500 text-sm">Loading leagues...</div>
                   ) : displayLeagues.length > 0 ? (
                     displayLeagues.map((league, index) => (
                       <motion.button
@@ -69,15 +73,11 @@ export default function HomePage() {
                             className="w-4 h-3 rounded object-cover"
                           />
                         )}
-                        <span className="group-hover:font-semibold transition-all truncate">
-                          {league.name}
-                        </span>
+                        <span className="group-hover:font-semibold transition-all truncate">{league.name}</span>
                       </motion.button>
                     ))
                   ) : (
-                    <div className="text-center py-4 text-gray-500 text-sm">
-                      No leagues available
-                    </div>
+                    <div className="text-center py-4 text-gray-500 text-sm">No leagues available</div>
                   )}
                 </div>
 
@@ -108,12 +108,8 @@ export default function HomePage() {
                     <div className="absolute inset-0 h-6 md:h-8 w-6 md:w-8 bg-blue-500 rounded-full blur-xl opacity-30" />
                   </div>
                   <div>
-                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">
-                      Expert Analysis
-                    </h2>
-                    <p className="text-xs md:text-sm text-gray-600 mt-1">
-                      Insights from professional analysts
-                    </p>
+                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">Expert Analysis</h2>
+                    <p className="text-xs md:text-sm text-gray-600 mt-1">Insights from professional analysts</p>
                   </div>
                 </div>
                 <Link href="/blog">
@@ -127,8 +123,8 @@ export default function HomePage() {
                 </Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {demoArticles.map((article, index) => (
-                  <Link key={article.id} href={`/blog/${article.id}`}>
+                {articles.map((article, index) => (
+                  <Link key={article._id || article.id} href={`/blog/${article._id || article.id}`}>
                     <Card
                       className="overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer h-full border-2 border-gray-100 hover:border-blue-300 group animate-fade-in"
                       style={{ animationDelay: `${index * 0.1}s` }}
@@ -153,7 +149,7 @@ export default function HomePage() {
                           </span>
                           <span className="text-xs text-gray-500 flex items-center gap-1">
                             <Sparkles className="h-3 w-3" />
-                            {article.readTime}
+                            {article.readTime || "5 min"}
                           </span>
                         </div>
                         <h3 className="font-bold text-lg md:text-xl mb-3 line-clamp-2 text-balance text-gray-900 group-hover:text-blue-600 transition-colors">
@@ -163,8 +159,8 @@ export default function HomePage() {
                           {article.excerpt}
                         </p>
                         <div className="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100">
-                          <span className="font-medium">{article.author}</span>
-                          <span>{article.date}</span>
+                          <span className="font-medium">{article.author || "Admin"}</span>
+                          <span>{article.date || new Date().toLocaleDateString()}</span>
                         </div>
                       </div>
                     </Card>
@@ -210,9 +206,8 @@ export default function HomePage() {
               </h2>
 
               <p className="text-sm md:text-lg lg:text-xl text-gray-400 mb-6 md:mb-8 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
-                Create your free account to get personalized match
-                notifications, follow your favorite teams, and access exclusive
-                expert analysis and predictions.
+                Create your free account to get personalized match notifications, follow your favorite teams, and access
+                exclusive expert analysis and predictions.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center">
@@ -239,5 +234,5 @@ export default function HomePage() {
 
       <Footer />
     </div>
-  );
+  )
 }

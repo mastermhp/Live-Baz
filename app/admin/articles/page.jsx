@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Plus, Edit, Trash2, Search } from "lucide-react"
+import { Plus, Edit, Trash2, Search, Upload, X } from "lucide-react"
 import { toast } from "sonner"
+import Image from "next/image"
 
 export default function ArticlesManager() {
   const [articles, setArticles] = useState([])
@@ -12,16 +13,23 @@ export default function ArticlesManager() {
   const [category, setCategory] = useState("")
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [formData, setFormData] = useState({
     title: "",
     excerpt: "",
     content: "",
     category: "analysis",
     featured: false,
+    image: "",
     seo: {
       metaTitle: "",
       metaDescription: "",
       keywords: "",
+    },
+    translations: {
+      en: { title: "", content: "", excerpt: "" },
+      fa: { title: "", content: "", excerpt: "" },
+      ar: { title: "", content: "", excerpt: "" },
     },
   })
 
@@ -41,6 +49,32 @@ export default function ArticlesManager() {
       console.error(error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleImageUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      setUploadingImage(true)
+      const formDataForUpload = new FormData()
+      formDataForUpload.append("file", file)
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formDataForUpload,
+      })
+
+      if (!res.ok) throw new Error("Image upload failed")
+
+      const { url } = await res.json()
+      setFormData({ ...formData, image: url })
+      toast.success("Image uploaded successfully")
+    } catch (error) {
+      toast.error(error.message || "Failed to upload image")
+    } finally {
+      setUploadingImage(false)
     }
   }
 
@@ -87,10 +121,16 @@ export default function ArticlesManager() {
       content: "",
       category: "analysis",
       featured: false,
+      image: "",
       seo: {
         metaTitle: "",
         metaDescription: "",
         keywords: "",
+      },
+      translations: {
+        en: { title: "", content: "", excerpt: "" },
+        fa: { title: "", content: "", excerpt: "" },
+        ar: { title: "", content: "", excerpt: "" },
       },
     })
   }
@@ -147,6 +187,45 @@ export default function ArticlesManager() {
             </div>
 
             <div>
+              <label className="block text-sm font-semibold mb-2">Featured Image</label>
+              <div className="border-2 border-dashed border-gray-200 rounded-xl p-6">
+                {formData.image ? (
+                  <div className="relative">
+                    <div className="relative h-48 mb-4">
+                      <Image
+                        src={formData.image || "/placeholder.svg"}
+                        alt="Article preview"
+                        fill
+                        className="object-cover rounded-lg"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, image: "" })}
+                      className="text-red-600 hover:text-red-700 flex items-center gap-2"
+                    >
+                      <X className="h-4 w-4" />
+                      Remove Image
+                    </button>
+                  </div>
+                ) : (
+                  <label className="cursor-pointer flex flex-col items-center gap-2">
+                    <Upload className="h-8 w-8 text-gray-400" />
+                    <span className="text-sm font-semibold text-gray-700">Click to upload or drag and drop</span>
+                    <span className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImage}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
+
+            <div>
               <label className="block text-sm font-semibold mb-2">Excerpt</label>
               <textarea
                 value={formData.excerpt}
@@ -164,7 +243,52 @@ export default function ArticlesManager() {
               />
             </div>
 
-            {/* SEO Section */}
+            <div className="border-t pt-6">
+              <h3 className="font-semibold mb-4">Translations (SEO)</h3>
+              <div className="space-y-6">
+                {["en", "fa", "ar"].map((lang) => (
+                  <div key={lang} className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-semibold mb-3 capitalize">
+                      {lang === "en" ? "English" : lang === "fa" ? "Farsi" : "Arabic"}
+                    </h4>
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">Title</label>
+                      <input
+                        type="text"
+                        value={formData.translations[lang]?.title || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            translations: {
+                              ...formData.translations,
+                              [lang]: { ...formData.translations[lang], title: e.target.value },
+                            },
+                          })
+                        }
+                        className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
+                      />
+                    </div>
+                    <div className="mt-2">
+                      <label className="block text-sm font-semibold mb-2">Excerpt</label>
+                      <textarea
+                        value={formData.translations[lang]?.excerpt || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            translations: {
+                              ...formData.translations,
+                              [lang]: { ...formData.translations[lang], excerpt: e.target.value },
+                            },
+                          })
+                        }
+                        className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none h-20"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="border-t pt-6">
               <h3 className="font-semibold mb-4">SEO Settings</h3>
               <div className="space-y-4">
@@ -255,6 +379,7 @@ export default function ArticlesManager() {
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Title</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Image</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Category</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Status</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Views</th>
@@ -265,6 +390,18 @@ export default function ArticlesManager() {
                 {filteredArticles.map((article) => (
                   <tr key={article._id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="px-6 py-4">{article.title}</td>
+                    <td className="px-6 py-4">
+                      {article.image && (
+                        <div className="relative h-12 w-12">
+                          <Image
+                            src={article.image || "/placeholder.svg"}
+                            alt={article.title}
+                            fill
+                            className="object-cover rounded-lg"
+                          />
+                        </div>
+                      )}
+                    </td>
                     <td className="px-6 py-4">
                       <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-lg">{article.category}</span>
                     </td>

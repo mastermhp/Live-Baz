@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Plus, Edit, Trash2 } from "lucide-react"
+import { Plus, Edit, Trash2, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 
 export default function MatchesManager() {
@@ -28,9 +28,20 @@ export default function MatchesManager() {
   async function fetchMatches() {
     try {
       setLoading(true)
-      const res = await fetch(`/api/admin/matches?status=${status}&limit=50`)
-      const data = await res.json()
-      setMatches(data.matches || [])
+      const localRes = await fetch(`/api/admin/matches?status=${status}&limit=50`)
+      const localData = await localRes.json()
+
+      // Fetch live matches from real API
+      const liveRes = await fetch("/api/matches/live")
+      const liveData = liveRes.ok ? await liveRes.json() : { matches: [] }
+
+      // Combine local admin matches with live API matches
+      let allMatches = localData.matches || []
+      if (liveData.matches && status === "live") {
+        allMatches = [...liveData.matches, ...allMatches]
+      }
+
+      setMatches(allMatches)
     } catch (error) {
       toast.error("Failed to fetch matches")
       console.error(error)
@@ -92,17 +103,23 @@ export default function MatchesManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Matches Management</h1>
-        <Button
-          onClick={() => {
-            setShowForm(!showForm)
-            setEditingId(null)
-            resetForm()
-          }}
-          className="bg-gradient-to-r from-blue-600 to-blue-700"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          New Match
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={fetchMatches} variant="outline" className="gap-2 bg-transparent">
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+          <Button
+            onClick={() => {
+              setShowForm(!showForm)
+              setEditingId(null)
+              resetForm()
+            }}
+            className="bg-gradient-to-r from-blue-600 to-blue-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            New Match
+          </Button>
+        </div>
       </div>
 
       {/* Match Form */}
