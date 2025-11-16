@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Trophy, Calendar, Play } from "lucide-react"
+import { Trophy, Calendar, Play } from 'lucide-react'
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useLeagues } from "@/hooks/use-leagues"
@@ -32,15 +32,21 @@ const cardHover = {
 export default function LeaguesPage() {
   const { leagues, loading: leaguesLoading } = useLeagues()
   const [selectedLeagueId, setSelectedLeagueId] = useState(null)
+
+  useEffect(() => {
+    if (leagues.length > 0 && !selectedLeagueId) {
+      setSelectedLeagueId(leagues[0].id)
+    }
+  }, [leagues, selectedLeagueId])
+
   const { matches, loading: matchesLoading } = useLeagueMatches(selectedLeagueId)
 
-  // Set first league as selected on load
-  const selectedLeague = leagues.find((l) => l.id === selectedLeagueId) || leagues[0]
+  const selectedLeague = leagues.find((l) => l.id === selectedLeagueId)
 
   // Group matches by status
-  const liveMatches = matches.filter((m) => m.fixture?.status === "LIVE")
-  const finishedMatches = matches.filter((m) => m.fixture?.status === "FT")
-  const upcomingMatches = matches.filter((m) => m.fixture?.status === "NS")
+  const liveMatches = matches.filter((m) => m.fixture?.status?.short === "LIVE" || m.fixture?.status?.short === "1H" || m.fixture?.status?.short === "2H" || m.fixture?.status?.short === "HT")
+  const finishedMatches = matches.filter((m) => m.fixture?.status?.short === "FT")
+  const upcomingMatches = matches.filter((m) => m.fixture?.status?.short === "NS" || m.fixture?.status?.short === "TBD")
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-sky-50 to-emerald-50 text-slate-800">
@@ -103,196 +109,204 @@ export default function LeaguesPage() {
 
       {/* Main Content */}
       <main className="relative z-20 max-w-7xl mx-auto px-6 pt-12 pb-24">
-        {/* Leagues Grid */}
-        <motion.section
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-16"
-        >
-          {leaguesLoading ? (
-            <div className="col-span-full text-center py-12">
-              <p className="text-gray-600">Loading leagues...</p>
-            </div>
-          ) : leagues.length > 0 ? (
-            leagues.map((league, idx) => (
-              <motion.article
-                key={league.id}
-                variants={cardHover}
-                whileHover="hover"
-                onClick={() => setSelectedLeagueId(league.id)}
-                className="cursor-pointer"
-              >
-                <Card className="relative overflow-hidden rounded-2xl p-0 transition-all h-full">
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full blur-3xl opacity-30 bg-gradient-to-br from-blue-500 to-emerald-400" />
-
-                  <div className="p-6 bg-white/90 backdrop-blur-sm border border-slate-100">
-                    <div className="flex items-start justify-between gap-4 mb-4">
-                      <motion.div
-                        whileHover={{ rotate: 6, scale: 1.08 }}
-                        className="h-16 w-16 rounded-xl flex items-center justify-center shadow-md bg-gradient-to-br from-blue-500 to-emerald-400 overflow-hidden"
-                      >
-                        {league.logo ? (
-                          <img
-                            src={league.logo || "/placeholder.svg"}
-                            alt={league.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <Trophy className="w-8 h-8 text-white" />
-                        )}
-                      </motion.div>
-
-                      {league.flag && (
-                        <motion.img
-                          whileHover={{ scale: 1.1 }}
-                          src={league.flag}
-                          alt={league.country}
-                          className="h-12 w-16 rounded-lg object-cover shadow-md"
-                        />
-                      )}
-                    </div>
-
-                    <h3 className="text-2xl font-bold text-slate-800 mb-1">{league.name}</h3>
-                    <p className="text-sm text-slate-500 mb-4 flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-emerald-400" /> {league.country}
-                    </p>
-
-                    <div className="border-t pt-3 border-slate-100">
-                      <Badge className="bg-blue-50 text-blue-700 border border-blue-100">Season {league.season}</Badge>
-                    </div>
-                  </div>
-                </Card>
-              </motion.article>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12">
-              <p className="text-gray-600">No leagues available</p>
-            </div>
-          )}
-        </motion.section>
-
-        {/* Selected League Matches */}
-        {selectedLeague && (
-          <motion.section
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-          >
-            <div className="flex items-center gap-4 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Leagues List - Left Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-6">
+              <h2 className="text-2xl font-bold text-slate-800 mb-6">All Leagues</h2>
               <motion.div
-                whileHover={{ scale: 1.06, rotate: 4 }}
-                className="h-16 w-16 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-emerald-400 shadow-lg overflow-hidden"
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto pr-2"
               >
-                {selectedLeague.logo ? (
-                  <img
-                    src={selectedLeague.logo || "/placeholder.svg"}
-                    alt={selectedLeague.name}
-                    className="w-full h-full object-cover"
-                  />
+                {leaguesLoading ? (
+                  <div className="text-center py-12">
+                    <p className="text-gray-600">Loading leagues...</p>
+                  </div>
+                ) : leagues.length > 0 ? (
+                  leagues.map((league) => (
+                    <motion.div
+                      key={league.id}
+                      variants={cardHover}
+                      whileHover="hover"
+                      onClick={() => setSelectedLeagueId(league.id)}
+                      className={`cursor-pointer ${selectedLeagueId === league.id ? "ring-2 ring-blue-500" : ""}`}
+                    >
+                      <Card className="relative overflow-hidden rounded-xl p-4 transition-all border border-slate-100 hover:border-blue-300">
+                        <div className="flex items-center gap-3">
+                          <motion.div
+                            whileHover={{ rotate: 6, scale: 1.08 }}
+                            className="h-12 w-12 rounded-lg flex items-center justify-center shadow-md bg-gradient-to-br from-blue-500 to-emerald-400 overflow-hidden flex-shrink-0"
+                          >
+                            {league.logo ? (
+                              <img
+                                src={league.logo || "/placeholder.svg"}
+                                alt={league.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <Trophy className="w-6 h-6 text-white" />
+                            )}
+                          </motion.div>
+
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-slate-800 truncate">{league.name}</h3>
+                            <p className="text-sm text-slate-500 flex items-center gap-1">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> {league.country}
+                            </p>
+                          </div>
+
+                          {league.flag && (
+                            <motion.img
+                              whileHover={{ scale: 1.1 }}
+                              src={league.flag}
+                              alt={league.country}
+                              className="h-8 w-10 rounded object-cover shadow-sm flex-shrink-0"
+                            />
+                          )}
+                        </div>
+                      </Card>
+                    </motion.div>
+                  ))
                 ) : (
-                  <Trophy className="w-8 h-8 text-white" />
+                  <div className="text-center py-12">
+                    <p className="text-gray-600">No leagues available</p>
+                  </div>
                 )}
               </motion.div>
-
-              {selectedLeague.flag && (
-                <motion.img
-                  whileHover={{ scale: 1.1 }}
-                  src={selectedLeague.flag}
-                  alt={selectedLeague.country}
-                  className="h-16 w-24 rounded-lg object-cover shadow-md"
-                />
-              )}
-
-              <div>
-                <h2 className="text-3xl font-extrabold text-slate-800">{selectedLeague.name}</h2>
-                <p className="text-sm text-slate-500">
-                  {selectedLeague.country} • Season {selectedLeague.season}
-                </p>
-              </div>
             </div>
+          </div>
 
-            {/* Live Matches */}
-            {liveMatches.length > 0 && (
-              <div className="mb-12">
-                <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <Play className="w-6 h-6 text-red-500 animate-pulse" />
-                  Live Matches
-                </h3>
-                <motion.div
-                  variants={containerVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                >
-                  {liveMatches.map((match) => (
-                    <MatchCard key={match.fixture.id} match={match} />
-                  ))}
-                </motion.div>
-              </div>
-            )}
+          {/* Matches Display - Right Side */}
+          <div className="lg:col-span-2">
+            {selectedLeague ? (
+              <motion.section
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7 }}
+              >
+                <div className="flex items-center gap-4 mb-8">
+                  <motion.div
+                    whileHover={{ scale: 1.06, rotate: 4 }}
+                    className="h-16 w-16 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-emerald-400 shadow-lg overflow-hidden"
+                  >
+                    {selectedLeague.logo ? (
+                      <img
+                        src={selectedLeague.logo || "/placeholder.svg"}
+                        alt={selectedLeague.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Trophy className="w-8 h-8 text-white" />
+                    )}
+                  </motion.div>
 
-            {/* Upcoming Matches */}
-            {upcomingMatches.length > 0 && (
-              <div className="mb-12">
-                <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <Calendar className="w-6 h-6 text-blue-500" />
-                  Upcoming Matches
-                </h3>
-                <motion.div
-                  variants={containerVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                >
-                  {upcomingMatches.map((match) => (
-                    <MatchCard key={match.fixture.id} match={match} />
-                  ))}
-                </motion.div>
-              </div>
-            )}
+                  {selectedLeague.flag && (
+                    <motion.img
+                      whileHover={{ scale: 1.1 }}
+                      src={selectedLeague.flag}
+                      alt={selectedLeague.country}
+                      className="h-16 w-24 rounded-lg object-cover shadow-md"
+                    />
+                  )}
 
-            {/* Finished Matches */}
-            {finishedMatches.length > 0 && (
-              <div>
-                <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <Trophy className="w-6 h-6 text-emerald-500" />
-                  Finished Matches
-                </h3>
-                <motion.div
-                  variants={containerVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                >
-                  {finishedMatches.map((match) => (
-                    <MatchCard key={match.fixture.id} match={match} />
-                  ))}
-                </motion.div>
-              </div>
-            )}
-
-            {matchesLoading && (
-              <div className="text-center py-12">
-                <p className="text-gray-600">Loading matches...</p>
-              </div>
-            )}
-
-            {!matchesLoading &&
-              liveMatches.length === 0 &&
-              upcomingMatches.length === 0 &&
-              finishedMatches.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-gray-600">No matches available for this league</p>
+                  <div>
+                    <h2 className="text-3xl font-extrabold text-slate-800">{selectedLeague.name}</h2>
+                    <p className="text-sm text-slate-500">
+                      {selectedLeague.country} • Season {selectedLeague.season}
+                    </p>
+                  </div>
                 </div>
-              )}
-          </motion.section>
-        )}
+
+                {/* Live Matches */}
+                {liveMatches.length > 0 && (
+                  <div className="mb-12">
+                    <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                      <Play className="w-6 h-6 text-red-500 animate-pulse" />
+                      Live Matches
+                    </h3>
+                    <motion.div
+                      variants={containerVariants}
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: true }}
+                      className="grid grid-cols-1 gap-6"
+                    >
+                      {liveMatches.map((match) => (
+                        <MatchCard key={match.fixture.id} match={match} />
+                      ))}
+                    </motion.div>
+                  </div>
+                )}
+
+                {/* Upcoming Matches */}
+                {upcomingMatches.length > 0 && (
+                  <div className="mb-12">
+                    <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                      <Calendar className="w-6 h-6 text-blue-500" />
+                      Upcoming Matches
+                    </h3>
+                    <motion.div
+                      variants={containerVariants}
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: true }}
+                      className="grid grid-cols-1 gap-6"
+                    >
+                      {upcomingMatches.map((match) => (
+                        <MatchCard key={match.fixture.id} match={match} />
+                      ))}
+                    </motion.div>
+                  </div>
+                )}
+
+                {/* Finished Matches */}
+                {finishedMatches.length > 0 && (
+                  <div>
+                    <h3 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                      <Trophy className="w-6 h-6 text-emerald-500" />
+                      Finished Matches
+                    </h3>
+                    <motion.div
+                      variants={containerVariants}
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: true }}
+                      className="grid grid-cols-1 gap-6"
+                    >
+                      {finishedMatches.map((match) => (
+                        <MatchCard key={match.fixture.id} match={match} />
+                      ))}
+                    </motion.div>
+                  </div>
+                )}
+
+                {matchesLoading && (
+                  <div className="text-center py-12">
+                    <p className="text-gray-600">Loading matches...</p>
+                  </div>
+                )}
+
+                {!matchesLoading &&
+                  liveMatches.length === 0 &&
+                  upcomingMatches.length === 0 &&
+                  finishedMatches.length === 0 && (
+                    <div className="text-center py-12">
+                      <p className="text-gray-600">No matches available for this league</p>
+                    </div>
+                  )}
+              </motion.section>
+            ) : (
+              <div className="text-center py-20">
+                <Trophy className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">Select a league to view matches</p>
+              </div>
+            )}
+          </div>
+        </div>
       </main>
 
       <Footer />
@@ -303,8 +317,8 @@ export default function LeaguesPage() {
 function MatchCard({ match }) {
   const homeTeam = match.teams.home
   const awayTeam = match.teams.away
-  const isLive = match.fixture.status === "LIVE"
-  const isFinished = match.fixture.status === "FT"
+  const isLive = ["LIVE", "1H", "2H", "HT"].includes(match.fixture.status?.short)
+  const isFinished = match.fixture.status?.short === "FT"
 
   return (
     <Link href={`/match/${match.fixture.id}`}>
@@ -367,7 +381,7 @@ function MatchCard({ match }) {
 
             {/* Match Info */}
             <div className="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-500">
-              {isLive && <span className="text-red-600 font-semibold">{match.fixture.status}</span>}
+              {isLive && <span className="text-red-600 font-semibold">{match.fixture.status?.elapsed}' {match.fixture.status?.short}</span>}
               {!isLive && (
                 <span>
                   {new Date(match.fixture.date).toLocaleDateString([], {

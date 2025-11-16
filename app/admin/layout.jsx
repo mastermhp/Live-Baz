@@ -2,21 +2,9 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams } from 'next/navigation'
 import { Suspense } from "react"
-import {
-  LayoutDashboard,
-  FileText,
-  Trophy,
-  Settings,
-  BarChart3,
-  Radio,
-  LogOut,
-  Plus,
-  Search,
-  Menu,
-  X,
-} from "lucide-react"
+import { LayoutDashboard, FileText, Trophy, Settings, BarChart3, Radio, LogOut, Plus, Search, Menu, X, TrendingUp } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 
 export default function AdminLayout({ children }) {
@@ -27,6 +15,7 @@ export default function AdminLayout({ children }) {
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
     { id: "articles", label: "Articles", icon: FileText, href: "/admin/articles" },
     { id: "matches", label: "Matches", icon: Trophy, href: "/admin/matches" },
+    { id: "predictions", label: "Predictions", icon: TrendingUp, href: "/admin/predictions" },
     { id: "analytics", label: "Analytics", icon: BarChart3, href: "/admin/analytics" },
     { id: "monitoring", label: "Monitoring", icon: Radio, href: "/admin/monitoring" },
     { id: "settings", label: "Settings", icon: Settings, href: "/admin/settings" },

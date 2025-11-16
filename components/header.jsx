@@ -1,8 +1,9 @@
 "use client"
 
 import { useUserAuth } from "@/lib/hooks/use-user-auth"
-import { LogOut, UserCircle, Search, X, Menu } from "lucide-react"
+import { LogOut, UserCircle, Search, X, Menu } from 'lucide-react'
 import AppDownloadBanner from "@/components/app-download-banner"
+import LanguageSwitcher from "@/components/language-switcher"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useState, useEffect } from "react"
@@ -13,6 +14,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
   const [profileDropdown, setProfileDropdown] = useState(false)
+  const [currentLang, setCurrentLang] = useState("en")
   const { user, authenticated, logout } = useUserAuth()
 
   useEffect(() => {
@@ -30,12 +32,18 @@ export default function Header() {
     setProfileDropdown(false)
   }
 
+  const handleLanguageChange = (lang) => {
+    setCurrentLang(lang)
+    // Store language preference
+    localStorage.setItem("preferred-language", lang)
+  }
+
   return (
     <>
       <AppDownloadBanner />
 
       <header
-        className={`sticky top-0 z-50 w-full transition-all duration-500 overflow-hidden`}
+        className={`sticky top-0 z-50 w-full transition-all duration-500`}
         style={{
           background: scrolled
             ? "linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(20, 30, 50, 0.7) 100%)"
@@ -120,6 +128,10 @@ export default function Header() {
                 isLoaded ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10"
               }`}
             >
+              <div className="relative z-[100]">
+                <LanguageSwitcher currentLang={currentLang} onLanguageChange={handleLanguageChange} />
+              </div>
+
               <div className="relative hidden sm:block">
                 <Button
                   variant="ghost"
@@ -132,7 +144,7 @@ export default function Header() {
                 </Button>
 
                 {searchOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-64 md:w-80 animate-slide-down">
+                  <div className="absolute right-0 top-full mt-2 w-64 md:w-80 animate-slide-down z-50">
                     <div
                       className="rounded-lg md:rounded-xl shadow-2xl border p-2 md:p-3 backdrop-blur-2xl"
                       style={{
@@ -156,7 +168,7 @@ export default function Header() {
               </div>
 
               {authenticated && user ? (
-                <div className="relative">
+                <div className="relative z-[100]">
                   <button
                     onClick={() => setProfileDropdown(!profileDropdown)}
                     className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-lg hover:bg-white/10 transition-all duration-300"
@@ -168,9 +180,10 @@ export default function Header() {
                   </button>
 
                   {profileDropdown && (
-                    <div className="absolute right-0 top-full mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg animate-slide-down">
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl animate-slide-down z-[200]">
                       <Link
                         href="/user/profile"
+                        onClick={() => setProfileDropdown(false)}
                         className="block px-4 py-3 text-gray-100 hover:bg-gray-700 text-sm font-medium transition-colors rounded-t-lg"
                       >
                         <UserCircle className="h-4 w-4 inline mr-2" />
@@ -289,8 +302,7 @@ export default function Header() {
                     <Button
                       className="mt-2 md:mt-3 w-full text-white shadow-lg text-xs md:text-sm"
                       style={{
-                        background:
-                          "linear-gradient(135deg, rgba(59, 130, 246, 0.85) 0%, rgba(34, 197, 233, 0.85) 100%)",
+                        background: "linear-gradient(135deg, rgba(59, 130, 246, 0.85) 0%, rgba(34, 197, 233, 0.85) 100%)",
                         boxShadow: "0 4px 20px rgba(59, 130, 246, 0.4)",
                       }}
                     >

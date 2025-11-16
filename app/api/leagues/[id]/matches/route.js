@@ -1,23 +1,27 @@
+const API_KEY = process.env.API_SPORTS_KEY
+const API_BASE = "https://v3.football.api-sports.io"
+
 export async function GET(request, { params }) {
   try {
     const { id } = params
-    const apiKey = process.env.RAPIDAPI_KEY
 
-    if (!apiKey) {
-      return Response.json({ error: "API key not configured" }, { status: 500 })
+    if (!API_KEY) {
+      return Response.json(
+        { error: "API key not configured. Please add API_SPORTS_KEY to environment variables." },
+        { status: 500 },
+      )
     }
 
     const options = {
       method: "GET",
       headers: {
-        "x-rapidapi-key": apiKey,
-        "x-rapidapi-host": "api-football-v1.p.rapidapi.com",
+        "x-apisports-key": API_KEY,
       },
     }
 
     // Fetch matches for the league
     const response = await fetch(
-      `https://api-football-v1.p.rapidapi.com/v3/fixtures?league=${id}&season=${new Date().getFullYear()}&status=LIVE,FT,NS,PST`,
+      `${API_BASE}/fixtures?league=${id}&season=${new Date().getFullYear()}&status=LIVE,FT,NS,PST`,
       options,
     )
 

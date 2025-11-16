@@ -1,20 +1,22 @@
+const API_KEY = process.env.API_SPORTS_KEY
+const API_BASE = "https://v3.football.api-sports.io"
+
 export async function GET() {
   try {
-    const apiKey = process.env.RAPIDAPI_KEY
-    if (!apiKey) {
+    if (!API_KEY) {
+      console.error("[v0] API key not configured")
       return Response.json({ error: "API key not configured" }, { status: 500 })
     }
 
     const options = {
       method: "GET",
       headers: {
-        "x-rapidapi-key": apiKey,
-        "x-rapidapi-host": "api-football-v1.p.rapidapi.com",
+        "x-apisports-key": API_KEY,
       },
     }
 
     // Fetch top leagues
-    const response = await fetch("https://api-football-v1.p.rapidapi.com/v3/leagues?type=league&current=true", options)
+    const response = await fetch(`${API_BASE}/leagues?type=league&current=true`, options)
 
     if (!response.ok) {
       console.error("[v0] Leagues API error:", response.status)

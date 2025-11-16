@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Plus, Edit, Trash2, RefreshCw } from "lucide-react"
+import { Plus, Edit, Trash2, RefreshCw } from 'lucide-react'
 import { toast } from "sonner"
 
 export default function MatchesManager() {
@@ -167,7 +167,7 @@ export default function MatchesManager() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Matches Management</h1>
           <p className="text-sm text-gray-500 mt-1">
-            {status === "live" && "Live matches from RapidAPI + manually added matches"}
+            {status === "live" && "Live matches from API-Sports + manually added matches"}
             {status === "upcoming" && "Upcoming matches (manually added)"}
             {status === "finished" && "Finished matches (manually added)"}
           </p>
@@ -497,7 +497,7 @@ export default function MatchesManager() {
                           match.isFromAPI ? "bg-purple-100 text-purple-700" : "bg-orange-100 text-orange-700"
                         }`}
                       >
-                        {match.isFromAPI ? "RapidAPI" : "Manual"}
+                        {match.isFromAPI ? "API-Sports" : "Manual"}
                       </span>
                     </td>
                     <td className="px-6 py-4 flex gap-2">

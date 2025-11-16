@@ -1,8 +1,14 @@
-"use client";
+"use client"
 
-import { motion } from "framer-motion";
-import Link from "next/link";
-import Image from "next/image";
+import { motion } from "framer-motion"
+import Link from "next/link"
+import Image from "next/image"
+import { useState, useEffect } from "react"
+import { Plus } from 'lucide-react'
+import { Button } from "@/components/ui/button"
+import AddPredictionModal from "@/components/add-prediction-modal"
+import { useUserAuth } from "@/lib/hooks/use-user-auth"
+import { useRouter } from 'next/navigation'
 
 const predictions = [
   {
@@ -17,8 +23,7 @@ const predictions = [
     },
     league: "J. League Japan",
     date: "Today, 11:00",
-    title:
-      "Gamba Osaka vs Kashiwa Reysol prediction and betting tips on October 19, 2025",
+    title: "Gamba Osaka vs Kashiwa Reysol prediction and betting tips on October 19, 2025",
   },
   {
     id: 2,
@@ -32,8 +37,7 @@ const predictions = [
     },
     league: "J. League Japan",
     date: "Today, 11:00",
-    title:
-      "Yokohama FC vs Nagoya Grampus prediction and betting tips on October 19, 2025",
+    title: "Yokohama FC vs Nagoya Grampus prediction and betting tips on October 19, 2025",
   },
   {
     id: 3,
@@ -47,10 +51,9 @@ const predictions = [
     },
     league: "J. League Japan",
     date: "19 Oct 2025, 12:00",
-    title:
-      "Shonan Bellmare vs Kyoto Sanga prediction and betting tips on October 19, 2025",
+    title: "Shonan Bellmare vs Kyoto Sanga prediction and betting tips on October 19, 2025",
   },
-];
+]
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -58,7 +61,7 @@ const containerVariants = {
     opacity: 1,
     transition: { staggerChildren: 0.15, delayChildren: 0.2 },
   },
-};
+}
 
 const cardVariants = {
   hidden: { opacity: 0, y: 40 },
@@ -67,20 +70,36 @@ const cardVariants = {
     y: 0,
     transition: { duration: 0.6, ease: "easeOut" },
   },
-};
+}
 
 export default function PredictionsSection() {
+  const [modalOpen, setModalOpen] = useState(false)
+  const [upcomingMatches, setUpcomingMatches] = useState([])
+  const { authenticated } = useUserAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    // Fetch upcoming matches for prediction modal
+    fetch("/api/matches/upcoming?limit=10")
+      .then((res) => res.json())
+      .then((data) => setUpcomingMatches(data.matches || []))
+      .catch(console.error)
+  }, [])
+
+  const handleShareClick = () => {
+    if (!authenticated) {
+      alert("Please sign in to share predictions")
+      router.push("/signin")
+      return
+    }
+    setModalOpen(true)
+  }
+
   return (
     <section className="relative py-20 bg-black text-white overflow-hidden">
       {/* Background with Image + Gradient Overlay */}
       <div className="absolute inset-0">
-        <Image
-          src="/herobg.png"
-          alt="Background Stadium"
-          fill
-          className="object-cover opacity-50"
-          priority
-        />
+        <Image src="/herobg.png" alt="Background Stadium" fill className="object-cover opacity-50" priority />
         <div className="absolute inset-0 bg-gradient-to-b from-gray-950 via-gray-900/80 to-black opacity-90" />
       </div>
 
@@ -109,6 +128,13 @@ export default function PredictionsSection() {
             ⚡ Match Predictions
           </h2>
           <div className="flex gap-3">
+            <Button
+              onClick={handleShareClick}
+              className="px-5 py-2 text-sm font-semibold rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 transition-all duration-300 flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Share Prediction
+            </Button>
             {["All", "Today", "Tomorrow"].map((btn) => (
               <button
                 key={btn}
@@ -150,37 +176,19 @@ export default function PredictionsSection() {
                 {/* Teams */}
                 <div className="flex items-center justify-between w-full">
                   <div className="flex flex-col items-center flex-1">
-                    <Image
-                      src={p.team1.logo}
-                      alt={p.team1.name}
-                      width={50}
-                      height={50}
-                      className="object-contain mb-2"
-                    />
-                    <p className="text-sm text-gray-300 text-center">
-                      {p.team1.name}
-                    </p>
+                    <Image src={p.team1.logo || "/placeholder.svg"} alt={p.team1.name} width={50} height={50} className="object-contain mb-2" />
+                    <p className="text-sm text-gray-300 text-center">{p.team1.name}</p>
                   </div>
                   <div className="px-4 text-xl font-bold text-blue-400">VS</div>
                   <div className="flex flex-col items-center flex-1">
-                    <Image
-                      src={p.team2.logo}
-                      alt={p.team2.name}
-                      width={50}
-                      height={50}
-                      className="object-contain mb-2"
-                    />
-                    <p className="text-sm text-gray-300 text-center">
-                      {p.team2.name}
-                    </p>
+                    <Image src={p.team2.logo || "/placeholder.svg"} alt={p.team2.name} width={50} height={50} className="object-contain mb-2" />
+                    <p className="text-sm text-gray-300 text-center">{p.team2.name}</p>
                   </div>
                 </div>
 
                 {/* Info */}
                 <div className="pt-3 text-center space-y-1 border-t border-gray-700 w-full">
-                  <p className="text-xs text-blue-400 font-semibold tracking-wide">
-                    {p.league}
-                  </p>
+                  <p className="text-xs text-blue-400 font-semibold tracking-wide">{p.league}</p>
                   <h3 className="text-base font-bold text-white hover:text-blue-400 transition-colors line-clamp-2">
                     {p.title}
                   </h3>
@@ -201,24 +209,23 @@ export default function PredictionsSection() {
           ))}
         </motion.div>
 
-        {/* Cards */}
-        {/* <motio */}
-
         {/* View All Button */}
         <div className="flex justify-center mt-16">
           <Link href="/all-predictions">
-          <motion.button
-            whileHover={{
-              scale: 1.08,
-              boxShadow: "0px 0px 20px rgba(59,130,246,0.5)",
-            }}
-            className="px-10 py-3 border-2 border-blue-500 text-blue-400 font-bold rounded-full hover:bg-blue-500 hover:text-white transition-all duration-500"
-          >
-            All Predictions →
-          </motion.button>
+            <motion.button
+              whileHover={{
+                scale: 1.08,
+                boxShadow: "0px 0px 20px rgba(59,130,246,0.5)",
+              }}
+              className="px-10 py-3 border-2 border-blue-500 text-blue-400 font-bold rounded-full hover:bg-blue-500 hover:text-white transition-all duration-500"
+            >
+              All Predictions →
+            </motion.button>
           </Link>
         </div>
       </div>
+
+      <AddPredictionModal open={modalOpen} onOpenChange={setModalOpen} />
     </section>
-  );
+  )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Globe } from "lucide-react"
+import { Globe } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { LANGUAGES } from "@/lib/i18n"
 
@@ -14,7 +14,7 @@ export default function LanguageSwitcher({ currentLang = "en", onLanguageChange 
   }
 
   return (
-    <div className="relative">
+    <div>
       <Button
         variant="outline"
         size="sm"
@@ -26,13 +26,15 @@ export default function LanguageSwitcher({ currentLang = "en", onLanguageChange 
       </Button>
 
       {open && (
-        <div className="absolute top-full right-0 mt-2 bg-card border border-border rounded-lg shadow-lg p-2 animate-slide-down z-10">
+        <div className="absolute top-full right-0 mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl p-2 animate-slide-down z-[200]">
           {Object.entries(LANGUAGES).map(([code, config]) => (
             <button
               key={code}
               onClick={() => handleLanguageChange(code)}
               className={`w-full text-left px-4 py-2 rounded transition-colors text-xs md:text-sm font-medium ${
-                currentLang === code ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                currentLang === code 
+                  ? "bg-blue-600 text-white" 
+                  : "text-gray-200 hover:bg-gray-700"
               }`}
             >
               {config.name}
