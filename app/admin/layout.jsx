@@ -6,10 +6,12 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense } from "react"
 import { LayoutDashboard, FileText, Trophy, Settings, BarChart3, Radio, LogOut, Plus, Search, Menu, X, TrendingUp } from 'lucide-react'
 import { Button } from "@/components/ui/button"
+import { useAdminAuth } from "@/lib/hooks/use-admin-auth"
 
 export default function AdminLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const searchParams = useSearchParams()
+  const { admin, loading, authenticated, logout } = useAdminAuth()
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
@@ -20,6 +22,28 @@ export default function AdminLayout({ children }) {
     { id: "monitoring", label: "Monitoring", icon: Radio, href: "/admin/monitoring" },
     { id: "settings", label: "Settings", icon: Settings, href: "/admin/settings" },
   ]
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-white border-r-transparent"></div>
+          <p className="mt-4 text-white text-lg">Verifying admin authentication...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!authenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-white border-r-transparent"></div>
+          <p className="mt-4 text-white text-lg">Access denied. Redirecting to login...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
@@ -70,15 +94,15 @@ export default function AdminLayout({ children }) {
           <div className="p-4 border-t border-gray-200">
             <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
               <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-green-500 flex items-center justify-center text-white font-bold">
-                A
+                {admin?.name?.charAt(0)?.toUpperCase() || 'A'}
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-gray-900">Admin User</p>
-                <p className="text-xs text-gray-500">admin@livebaz.com</p>
+                <p className="text-sm font-semibold text-gray-900">{admin?.name || 'Admin User'}</p>
+                <p className="text-xs text-gray-500">{admin?.email || 'admin@livebaz.com'}</p>
               </div>
-              <Link href="/signin">
+              <button onClick={logout} title="Logout">
                 <LogOut className="h-5 w-5 text-gray-400 hover:text-red-600 transition-colors" />
-              </Link>
+              </button>
             </div>
           </div>
         </div>
