@@ -12,6 +12,7 @@ export default function AdminLogin() {
   const [formData, setFormData] = useState({
     email: "admin@livebaz.com",
     password: "admin123",
+    // password: "Admin@123456",
   })
 
   async function handleLogin(e) {
@@ -93,11 +94,11 @@ export default function AdminLogin() {
           </form>
 
           {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+          {/* <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
             <p className="text-xs font-semibold text-blue-900 mb-2">Demo Credentials:</p>
             <p className="text-xs text-blue-700">Email: admin@livebaz.com</p>
-            <p className="text-xs text-blue-700">Password: admin123</p>
-          </div>
+            <p className="text-xs text-blue-700">Password: Admin@123456</p>
+          </div> */}
         </div>
 
         {/* Footer */}

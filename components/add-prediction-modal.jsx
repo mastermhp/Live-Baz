@@ -19,9 +19,39 @@ export default function AddPredictionModal({ open, onOpenChange }) {
   const [loadingMatches, setLoadingMatches] = useState(true)
   const [matches, setMatches] = useState([])
   const [selectedMatch, setSelectedMatch] = useState("")
+  
   const [formData, setFormData] = useState({
     predictedWinner: "home",
     confidence: 70,
+    venue: "",
+    winProbability: { team1: 0, draw: 0, team2: 0 },
+    expertTip: "",
+    odds: "",
+    team1Stats: {
+      form: "",
+      goalsFor: 0,
+      goalsAgainst: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+    },
+    team2Stats: {
+      form: "",
+      goalsFor: 0,
+      goalsAgainst: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+    },
+    predictedLineups: {
+      team1: "",
+      team2: "",
+    },
+    recentForm: {
+      team1: "",
+      team2: "",
+    },
+    keyStats: ["", "", "", "", ""],
     analysis: {
       en: "",
       fa: "",
@@ -58,6 +88,8 @@ export default function AddPredictionModal({ open, onOpenChange }) {
         homeTeam: { name: fixture.teams.home.name, logo: fixture.teams.home.logo },
         awayTeam: { name: fixture.teams.away.name, logo: fixture.teams.away.logo },
         league: { name: fixture.league.name },
+        venue: fixture.fixture.venue?.name || "",
+        date: fixture.fixture.date,
         status: 'live',
         time: fixture.fixture.status.elapsed ? `${fixture.fixture.status.elapsed}'` : 'LIVE'
       }))
@@ -67,6 +99,8 @@ export default function AddPredictionModal({ open, onOpenChange }) {
         homeTeam: { name: fixture.teams.home.name, logo: fixture.teams.home.logo },
         awayTeam: { name: fixture.teams.away.name, logo: fixture.teams.away.logo },
         league: { name: fixture.league.name },
+        venue: fixture.fixture.venue?.name || "",
+        date: fixture.fixture.date,
         status: 'upcoming',
         time: new Date(fixture.fixture.date).toLocaleString()
       }))
@@ -114,12 +148,21 @@ export default function AddPredictionModal({ open, onOpenChange }) {
 
       const payload = {
         matchId: match.id,
-        team1: match.homeTeam?.name || "Team 1",
-        team2: match.awayTeam?.name || "Team 2",
+        team1: { name: match.homeTeam?.name || "Team 1", logo: match.homeTeam?.logo || "" },
+        team2: { name: match.awayTeam?.name || "Team 2", logo: match.awayTeam?.logo || "" },
         league: match.league?.name || "League",
+        matchDate: match.date,
+        venue: formData.venue || match.venue,
         predictedWinner: formData.predictedWinner,
         confidence: formData.confidence,
-        analysis: formData.analysis.en,
+        winProbability: formData.winProbability,
+        expertTip: formData.expertTip,
+        odds: formData.odds,
+        team1Stats: formData.team1Stats,
+        team2Stats: formData.team2Stats,
+        predictedLineups: formData.predictedLineups,
+        recentForm: formData.recentForm,
+        keyStats: formData.keyStats.filter(stat => stat.trim() !== ""),
         translations: {
           en: {
             title: formData.title.en,
@@ -153,6 +196,15 @@ export default function AddPredictionModal({ open, onOpenChange }) {
         setFormData({
           predictedWinner: "home",
           confidence: 70,
+          venue: "",
+          winProbability: { team1: 0, draw: 0, team2: 0 },
+          expertTip: "",
+          odds: "",
+          team1Stats: { form: "", goalsFor: 0, goalsAgainst: 0, wins: 0, draws: 0, losses: 0 },
+          team2Stats: { form: "", goalsFor: 0, goalsAgainst: 0, wins: 0, draws: 0, losses: 0 },
+          predictedLineups: { team1: "", team2: "" },
+          recentForm: { team1: "", team2: "" },
+          keyStats: ["", "", "", "", ""],
           analysis: { en: "", fa: "", ar: "" },
           title: { en: "", fa: "", ar: "" },
         })
@@ -170,9 +222,15 @@ export default function AddPredictionModal({ open, onOpenChange }) {
     }
   }
 
+  const updateKeyStats = (index, value) => {
+    const newKeyStats = [...formData.keyStats]
+    newKeyStats[index] = value
+    setFormData({ ...formData, keyStats: newKeyStats })
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-gray-900 to-gray-800 text-white border border-blue-500/30">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-gray-900 to-gray-800 text-white border border-blue-500/30">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-3">
             <Trophy className="h-7 w-7 text-yellow-400" />
@@ -229,19 +287,31 @@ export default function AddPredictionModal({ open, onOpenChange }) {
             )}
           </div>
 
-          {/* Predicted Winner */}
-          <div className="space-y-2">
-            <Label className="text-white">Predicted Winner</Label>
-            <Select value={formData.predictedWinner} onValueChange={(val) => setFormData({ ...formData, predictedWinner: val })}>
-              <SelectTrigger className="bg-white/10 border-blue-500/30 text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-blue-500/30">
-                <SelectItem value="home" className="text-white hover:bg-blue-500/20">Home Win</SelectItem>
-                <SelectItem value="draw" className="text-white hover:bg-blue-500/20">Draw</SelectItem>
-                <SelectItem value="away" className="text-white hover:bg-blue-500/20">Away Win</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Basic Info Grid */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-white">Predicted Winner</Label>
+              <Select value={formData.predictedWinner} onValueChange={(val) => setFormData({ ...formData, predictedWinner: val })}>
+                <SelectTrigger className="bg-white/10 border-blue-500/30 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-blue-500/30">
+                  <SelectItem value="home" className="text-white hover:bg-blue-500/20">Home Win</SelectItem>
+                  <SelectItem value="draw" className="text-white hover:bg-blue-500/20">Draw</SelectItem>
+                  <SelectItem value="away" className="text-white hover:bg-blue-500/20">Away Win</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white">Venue</Label>
+              <Input
+                value={formData.venue}
+                onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                placeholder="Stadium name"
+                className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+              />
+            </div>
           </div>
 
           {/* Confidence Level */}
@@ -258,6 +328,293 @@ export default function AddPredictionModal({ open, onOpenChange }) {
               onChange={(e) => setFormData({ ...formData, confidence: parseInt(e.target.value) })}
               className="w-full h-2 bg-blue-500/20 rounded-lg appearance-none cursor-pointer slider"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-white">Win Probability</Label>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label className="text-xs text-gray-400">Home Win %</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={formData.winProbability.team1}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    winProbability: { ...formData.winProbability, team1: parseInt(e.target.value) || 0 }
+                  })}
+                  className="bg-white/10 border-blue-500/30 text-white mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-gray-400">Draw %</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={formData.winProbability.draw}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    winProbability: { ...formData.winProbability, draw: parseInt(e.target.value) || 0 }
+                  })}
+                  className="bg-white/10 border-blue-500/30 text-white mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-gray-400">Away Win %</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={formData.winProbability.team2}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    winProbability: { ...formData.winProbability, team2: parseInt(e.target.value) || 0 }
+                  })}
+                  className="bg-white/10 border-blue-500/30 text-white mt-1"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-white">Expert Tip</Label>
+              <Input
+                value={formData.expertTip}
+                onChange={(e) => setFormData({ ...formData, expertTip: e.target.value })}
+                placeholder="e.g., Home team to win and BTTS"
+                className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Odds</Label>
+              <Input
+                value={formData.odds}
+                onChange={(e) => setFormData({ ...formData, odds: e.target.value })}
+                placeholder="e.g., 2.11"
+                className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+              />
+            </div>
+          </div>
+
+          <div className="border border-blue-500/30 rounded-lg p-4 space-y-4 bg-white/5">
+            <h3 className="font-bold text-lg text-blue-400">Team Statistics</h3>
+            <div className="grid grid-cols-2 gap-6">
+              {/* Home Team Stats */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-cyan-400">Home Team</h4>
+                <Input
+                  placeholder="Form (W-W-D-L-L)"
+                  value={formData.team1Stats.form}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    team1Stats: { ...formData.team1Stats, form: e.target.value }
+                  })}
+                  className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                />
+                <div className="grid grid-cols-3 gap-2">
+                  <Input
+                    type="number"
+                    placeholder="Wins"
+                    value={formData.team1Stats.wins}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      team1Stats: { ...formData.team1Stats, wins: parseInt(e.target.value) || 0 }
+                    })}
+                    className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Draws"
+                    value={formData.team1Stats.draws}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      team1Stats: { ...formData.team1Stats, draws: parseInt(e.target.value) || 0 }
+                    })}
+                    className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Losses"
+                    value={formData.team1Stats.losses}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      team1Stats: { ...formData.team1Stats, losses: parseInt(e.target.value) || 0 }
+                    })}
+                    className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="Goals For"
+                    value={formData.team1Stats.goalsFor}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      team1Stats: { ...formData.team1Stats, goalsFor: parseFloat(e.target.value) || 0 }
+                    })}
+                    className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                  />
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="Goals Against"
+                    value={formData.team1Stats.goalsAgainst}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      team1Stats: { ...formData.team1Stats, goalsAgainst: parseFloat(e.target.value) || 0 }
+                    })}
+                    className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                  />
+                </div>
+              </div>
+
+              {/* Away Team Stats */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-purple-400">Away Team</h4>
+                <Input
+                  placeholder="Form (W-W-D-L-L)"
+                  value={formData.team2Stats.form}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    team2Stats: { ...formData.team2Stats, form: e.target.value }
+                  })}
+                  className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                />
+                <div className="grid grid-cols-3 gap-2">
+                  <Input
+                    type="number"
+                    placeholder="Wins"
+                    value={formData.team2Stats.wins}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      team2Stats: { ...formData.team2Stats, wins: parseInt(e.target.value) || 0 }
+                    })}
+                    className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Draws"
+                    value={formData.team2Stats.draws}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      team2Stats: { ...formData.team2Stats, draws: parseInt(e.target.value) || 0 }
+                    })}
+                    className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Losses"
+                    value={formData.team2Stats.losses}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      team2Stats: { ...formData.team2Stats, losses: parseInt(e.target.value) || 0 }
+                    })}
+                    className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="Goals For"
+                    value={formData.team2Stats.goalsFor}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      team2Stats: { ...formData.team2Stats, goalsFor: parseFloat(e.target.value) || 0 }
+                    })}
+                    className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                  />
+                  <Input
+                    type="number"
+                    step="0.1"
+                    placeholder="Goals Against"
+                    value={formData.team2Stats.goalsAgainst}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      team2Stats: { ...formData.team2Stats, goalsAgainst: parseFloat(e.target.value) || 0 }
+                    })}
+                    className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-white">Home Team Lineup</Label>
+              <Textarea
+                value={formData.predictedLineups.team1}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  predictedLineups: { ...formData.predictedLineups, team1: e.target.value }
+                })}
+                placeholder="e.g., Ryo, Hosoi-Nduka-Iwatanake..."
+                className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Away Team Lineup</Label>
+              <Textarea
+                value={formData.predictedLineups.team2}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  predictedLineups: { ...formData.predictedLineups, team2: e.target.value }
+                })}
+                placeholder="e.g., Takeda, Sato-Fuji-Uchida..."
+                className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-white">Home Team Recent Form</Label>
+              <Textarea
+                value={formData.recentForm.team1}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  recentForm: { ...formData.recentForm, team1: e.target.value }
+                })}
+                placeholder="Describe recent performance..."
+                className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">Away Team Recent Form</Label>
+              <Textarea
+                value={formData.recentForm.team2}
+                onChange={(e) => setFormData({
+                  ...formData,
+                  recentForm: { ...formData.recentForm, team2: e.target.value }
+                })}
+                placeholder="Describe recent performance..."
+                className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-white">Key Stats and Trends (5 points)</Label>
+            <div className="space-y-2">
+              {[0, 1, 2, 3, 4].map((idx) => (
+                <Input
+                  key={idx}
+                  value={formData.keyStats[idx]}
+                  onChange={(e) => updateKeyStats(idx, e.target.value)}
+                  placeholder={`Key stat ${idx + 1}`}
+                  className="bg-white/10 border-blue-500/30 text-white placeholder:text-gray-400"
+                />
+              ))}
+            </div>
           </div>
 
           {/* Multi-language Tabs */}

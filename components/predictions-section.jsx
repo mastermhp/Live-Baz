@@ -10,51 +10,6 @@ import AddPredictionModal from "@/components/add-prediction-modal"
 import { useUserAuth } from "@/lib/hooks/use-user-auth"
 import { useRouter } from 'next/navigation'
 
-const predictions = [
-  {
-    id: 1,
-    team1: {
-      name: "Gamba Osaka",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Gamba_Osaka_logo.svg/250px-Gamba_Osaka_logo.svg.png",
-    },
-    team2: {
-      name: "Kashiwa Reysol",
-      logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlOyJOBg4fzDpswTCJsTAYraZ4TAU9ZjEWVw&s",
-    },
-    league: "J. League Japan",
-    date: "Today, 11:00",
-    title: "Gamba Osaka vs Kashiwa Reysol prediction and betting tips on October 19, 2025",
-  },
-  {
-    id: 2,
-    team1: {
-      name: "Yokohama FC",
-      logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFU5X8tJPDESLkmQ-zbHydd_OJjz9RX6iiXw&s",
-    },
-    team2: {
-      name: "Nagoya Grampus",
-      logo: "https://upload.wikimedia.org/wikipedia/en/thumb/9/95/Nagoya_Grampus_Logo.svg/250px-Nagoya_Grampus_Logo.svg.png",
-    },
-    league: "J. League Japan",
-    date: "Today, 11:00",
-    title: "Yokohama FC vs Nagoya Grampus prediction and betting tips on October 19, 2025",
-  },
-  {
-    id: 3,
-    team1: {
-      name: "Shonan Bellmare",
-      logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWniFNKblMLA1uH8cFnldZ-JcgQc_lu2AoiQ&s",
-    },
-    team2: {
-      name: "Kyoto Sanga",
-      logo: "https://upload.wikimedia.org/wikipedia/en/thumb/a/a2/Kyoto_Sanga_FC_logo.svg/150px-Kyoto_Sanga_FC_logo.svg.png",
-    },
-    league: "J. League Japan",
-    date: "19 Oct 2025, 12:00",
-    title: "Shonan Bellmare vs Kyoto Sanga prediction and betting tips on October 19, 2025",
-  },
-]
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -74,16 +29,23 @@ const cardVariants = {
 
 export default function PredictionsSection() {
   const [modalOpen, setModalOpen] = useState(false)
-  const [upcomingMatches, setUpcomingMatches] = useState([])
+  const [predictions, setPredictions] = useState([])
+  const [loading, setLoading] = useState(true)
   const { authenticated } = useUserAuth()
   const router = useRouter()
 
   useEffect(() => {
-    // Fetch upcoming matches for prediction modal
-    fetch("/api/matches/upcoming?limit=10")
+    // Fetch predictions from database
+    fetch("/api/predictions?limit=6")
       .then((res) => res.json())
-      .then((data) => setUpcomingMatches(data.matches || []))
-      .catch(console.error)
+      .then((data) => {
+        setPredictions(data.predictions || [])
+        setLoading(false)
+      })
+      .catch((error) => {
+        console.error("Error fetching predictions:", error)
+        setLoading(false)
+      })
   }, [])
 
   const handleShareClick = () => {
@@ -99,7 +61,7 @@ export default function PredictionsSection() {
     <section className="relative py-20 bg-black text-white overflow-hidden">
       {/* Background with Image + Gradient Overlay */}
       <div className="absolute inset-0">
-        <Image src="/herobg.png" alt="Background Stadium" fill className="object-cover opacity-50" priority />
+        <Image src="/herobg.png" alt="Football stadium background" fill className="object-cover opacity-50" priority />
         <div className="absolute inset-0 bg-gradient-to-b from-gray-950 via-gray-900/80 to-black opacity-90" />
       </div>
 
@@ -135,79 +97,94 @@ export default function PredictionsSection() {
               <Plus className="h-4 w-4" />
               Share Prediction
             </Button>
-            {["All", "Today", "Tomorrow"].map((btn) => (
-              <button
-                key={btn}
-                className="px-5 py-2 text-sm font-semibold rounded-full border border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white transition-all duration-300"
-              >
-                {btn}
-              </button>
-            ))}
           </div>
         </motion.div>
 
         {/* Predictions Grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-        >
-          {predictions.map((p) => (
-            <motion.div
-              key={p.id}
-              variants={cardVariants}
-              whileHover={{ scale: 1.05 }}
-              className="relative rounded-2xl overflow-hidden border border-gray-800 bg-gray-900/70 backdrop-blur-md shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-500"
-            >
-              {/* Background */}
-              <div
-                className="absolute inset-0 opacity-30 bg-cover bg-center"
-                style={{
-                  backgroundImage:
-                    "url('https://png.pngtree.com/background/20250124/original/pngtree-futuristic-soccer-stadium-with-holographic-ball-and-blue-lights-picture-image_15711843.jpg')",
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <p className="mt-4 text-gray-400">Loading predictions...</p>
+          </div>
+        ) : predictions.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-400">No predictions available yet. Be the first to share one!</p>
+          </div>
+        ) : (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {predictions.map((p) => (
+              <motion.div
+                key={p._id}
+                variants={cardVariants}
+                whileHover={{ scale: 1.05 }}
+                className="relative rounded-2xl overflow-hidden border border-gray-800 bg-gray-900/70 backdrop-blur-md shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 transition-all duration-500"
+              >
+                {/* Background */}
+                <div
+                  className="absolute inset-0 opacity-30 bg-cover bg-center"
+                  style={{
+                    backgroundImage:
+                      "url('https://png.pngtree.com/background/20250124/original/pngtree-futuristic-soccer-stadium-with-holographic-ball-and-blue-lights-picture-image_15711843.jpg')",
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
 
-              {/* Content */}
-              <div className="relative p-6 flex flex-col items-center space-y-4">
-                {/* Teams */}
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex flex-col items-center flex-1">
-                    <Image src={p.team1.logo || "/placeholder.svg"} alt={p.team1.name} width={50} height={50} className="object-contain mb-2" />
-                    <p className="text-sm text-gray-300 text-center">{p.team1.name}</p>
+                {/* Content */}
+                <div className="relative p-6 flex flex-col items-center space-y-4">
+                  {/* Teams */}
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex flex-col items-center flex-1">
+                      <Image 
+                        src={p.team1?.logo || "/placeholder.svg?height=50&width=50"} 
+                        alt={p.team1?.name || "Home team"} 
+                        width={50} 
+                        height={50} 
+                        className="object-contain mb-2" 
+                      />
+                      <p className="text-sm text-gray-300 text-center">{p.team1?.name}</p>
+                    </div>
+                    <div className="px-4 text-xl font-bold text-blue-400">VS</div>
+                    <div className="flex flex-col items-center flex-1">
+                      <Image 
+                        src={p.team2?.logo || "/placeholder.svg?height=50&width=50"} 
+                        alt={p.team2?.name || "Away team"} 
+                        width={50} 
+                        height={50} 
+                        className="object-contain mb-2" 
+                      />
+                      <p className="text-sm text-gray-300 text-center">{p.team2?.name}</p>
+                    </div>
                   </div>
-                  <div className="px-4 text-xl font-bold text-blue-400">VS</div>
-                  <div className="flex flex-col items-center flex-1">
-                    <Image src={p.team2.logo || "/placeholder.svg"} alt={p.team2.name} width={50} height={50} className="object-contain mb-2" />
-                    <p className="text-sm text-gray-300 text-center">{p.team2.name}</p>
+
+                  {/* Info */}
+                  <div className="pt-3 text-center space-y-1 border-t border-gray-700 w-full">
+                    <p className="text-xs text-blue-400 font-semibold tracking-wide">{p.league}</p>
+                    <h3 className="text-base font-bold text-white hover:text-blue-400 transition-colors line-clamp-2">
+                      {p.team1?.name} vs {p.team2?.name} prediction and betting tips on {new Date(p.matchDate).toLocaleDateString()}
+                    </h3>
+                    <p className="text-xs text-gray-400">{new Date(p.matchDate).toLocaleString()}</p>
                   </div>
-                </div>
 
-                {/* Info */}
-                <div className="pt-3 text-center space-y-1 border-t border-gray-700 w-full">
-                  <p className="text-xs text-blue-400 font-semibold tracking-wide">{p.league}</p>
-                  <h3 className="text-base font-bold text-white hover:text-blue-400 transition-colors line-clamp-2">
-                    {p.title}
-                  </h3>
-                  <p className="text-xs text-gray-400">{p.date}</p>
+                  {/* CTA Button */}
+                  <Link href={`/prediction/${p._id}`}>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      className="mt-4 px-6 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full text-black hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300"
+                    >
+                      View Prediction →
+                    </motion.button>
+                  </Link>
                 </div>
-
-                {/* CTA Button */}
-                <Link href={`/prediction/${p.id}`}>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    className="mt-4 px-6 py-2 text-sm font-semibold bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full text-black hover:shadow-lg hover:shadow-cyan-400/30 transition-all duration-300"
-                  >
-                    View Prediction →
-                  </motion.button>
-                </Link>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
 
         {/* View All Button */}
         <div className="flex justify-center mt-16">

@@ -45,8 +45,8 @@ export default function AdminPredictionsPage() {
 
   const filteredPredictions = predictions.filter(
     (p) =>
-      p.team1?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.team2?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.team1?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.team2?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.league?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
@@ -179,7 +179,7 @@ export default function AdminPredictionsPage() {
                   <tr key={prediction._id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900">
-                        {prediction.team1} vs {prediction.team2}
+                        {prediction.team1?.name || prediction.team1} vs {prediction.team2?.name || prediction.team2}
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
                         {new Date(prediction.createdAt).toLocaleDateString()}

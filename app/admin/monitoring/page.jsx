@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AlertCircle, CheckCircle, AlertTriangle, Activity, Zap } from "lucide-react"
+import { AlertCircle, CheckCircle, AlertTriangle, Activity, Zap } from 'lucide-react'
 import { useLiveMatches } from "@/hooks/use-live-updates.js"
 
 export default function MonitoringPage() {
@@ -28,9 +28,15 @@ export default function MonitoringPage() {
           severity: "info",
         }
       })
-      setLiveEvents(newEvents)
+      
+      // Only update if events actually changed to prevent infinite loop
+      setLiveEvents((prevEvents) => {
+        const prevIds = prevEvents.map(e => e.id).join(',')
+        const newIds = newEvents.map(e => e.id).join(',')
+        return prevIds !== newIds ? newEvents : prevEvents
+      })
     }
-  }, [matches])
+  }, [matches]) // Only depends on matches
 
   useEffect(() => {
     setSystemStatus((prev) => ({

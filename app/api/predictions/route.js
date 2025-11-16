@@ -37,21 +37,9 @@ export async function GET(req) {
 export async function POST(req) {
   try {
     const body = await req.json()
-    const {
-      matchId,
-      team1,
-      team2,
-      league,
-      predictedWinner,
-      confidence,
-      analysis,
-      translations,
-      author,
-      authorId,
-    } = body
 
     // Validate required fields
-    if (!matchId || !team1 || !team2 || !predictedWinner || !analysis) {
+    if (!body.matchId || !body.team1 || !body.team2 || !body.predictedWinner) {
       return Response.json({ error: "Missing required fields" }, { status: 400 })
     }
 
@@ -59,16 +47,29 @@ export async function POST(req) {
     const collection = db.collection(COLLECTIONS.PREDICTIONS)
 
     const newPrediction = {
-      matchId,
-      team1,
-      team2,
-      league,
-      predictedWinner,
-      confidence: confidence || 70,
-      analysis,
-      translations: translations || {},
-      author: author || "User",
-      authorId: authorId || null,
+      matchId: body.matchId,
+      team1: body.team1,
+      team2: body.team2,
+      league: body.league || "",
+      matchDate: body.matchDate || new Date().toISOString(),
+      venue: body.venue || "",
+      predictedWinner: body.predictedWinner,
+      confidence: body.confidence || 70,
+      winProbability: body.winProbability || { team1: 0, draw: 0, team2: 0 },
+      expertTip: body.expertTip || "",
+      odds: body.odds || "",
+      team1Stats: body.team1Stats || {},
+      team2Stats: body.team2Stats || {},
+      predictedLineups: body.predictedLineups || { team1: "", team2: "" },
+      recentForm: body.recentForm || { team1: "", team2: "" },
+      keyStats: body.keyStats || [],
+      translations: body.translations || {
+        en: { title: "", analysis: "" },
+        fa: { title: "", analysis: "" },
+        ar: { title: "", analysis: "" },
+      },
+      author: body.author || "User",
+      authorId: body.authorId || null,
       createdAt: new Date(),
       result: "pending",
       likes: 0,

@@ -2,25 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import {
-  LayoutDashboard,
-  FileText,
-  Trophy,
-  Settings,
-  BarChart3,
-  Radio,
-  LogOut,
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  Eye,
-  TrendingUp,
-  Activity,
-  Calendar,
-  Menu,
-  X,
-} from "lucide-react"
+import { LayoutDashboard, FileText, Trophy, Settings, BarChart3, Radio, LogOut, Plus, Search, Edit, Trash2, Eye, TrendingUp, Activity, Calendar, Menu, X } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 
 export default function AdminPanel() {
@@ -55,6 +37,10 @@ export default function AdminPanel() {
       const analyticsRes = await fetch("/api/admin/analytics?period=week")
       const analyticsData = await analyticsRes.json()
 
+      const liveMatchesRes = await fetch("/api/matches/live")
+      const liveMatchesData = await liveMatchesRes.json()
+      const liveMatches = liveMatchesData.matches || []
+
       setStats([
         {
           label: "Total Articles",
@@ -65,8 +51,8 @@ export default function AdminPanel() {
         },
         {
           label: "Live Matches",
-          value: matches.filter((m) => m.status === "live").length.toString(),
-          change: "Active",
+          value: liveMatches.length.toString(),
+          change: "Live Now",
           icon: Radio,
           color: "green",
         },
@@ -97,13 +83,13 @@ export default function AdminPanel() {
       )
 
       setLiveMatches(
-        matches.slice(0, 3).map((match) => ({
-          id: match._id,
-          home: match.homeTeamId,
-          away: match.awayTeamId,
-          score: `${match.score?.home || 0}-${match.score?.away || 0}`,
-          time: match.status === "live" ? "67'" : new Date(match.startTime).toLocaleTimeString(),
-          league: match.leagueId,
+        liveMatches.slice(0, 3).map((match) => ({
+          id: match.fixture?.id || match.id,
+          home: match.teams?.home?.name || "Home Team",
+          away: match.teams?.away?.name || "Away Team",
+          score: `${match.goals?.home ?? 0}-${match.goals?.away ?? 0}`,
+          time: match.fixture?.status?.elapsed ? `${match.fixture.status.elapsed}'` : new Date(match.fixture?.date).toLocaleTimeString(),
+          league: match.league?.name || "League",
         })),
       )
     } catch (error) {
@@ -191,7 +177,7 @@ export default function AdminPanel() {
       </aside>
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 ${sidebarOpen ? "lg:ml-64" : ""}`}>
+      <div className={`transition-all duration-300`}>
         {/* Top Bar */}
         <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-gray-200 shadow-sm">
           <div className="flex items-center justify-between p-4">

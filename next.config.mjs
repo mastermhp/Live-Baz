@@ -14,19 +14,15 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "media.api-sports.io",
+      },
+      {
+        protocol: "https",
         hostname: "upload.wikimedia.org",
       },
       {
         protocol: "https",
         hostname: "encrypted-tbn0.gstatic.com",
-      },
-      {
-        protocol: "https",
-        hostname: "png.pngtree.com",
-      },
-      {
-        protocol: "https",
-        hostname: "hebbkx1anhila5yf.public.blob.vercel-storage.com",
       },
     ],
   },
